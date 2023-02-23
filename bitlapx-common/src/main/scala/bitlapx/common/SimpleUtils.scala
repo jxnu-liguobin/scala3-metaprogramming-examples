@@ -21,19 +21,26 @@
 
 package bitlapx.common
 
+import bitlapx.common.*
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import scala.compiletime.*
 import scala.deriving.Mirror
+import scala.annotation.tailrec
+import scala.compiletime.*
 import scala.quoted.*
 
 /** @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/3/1
  */
-object Bitlapx:
+object SimpleUtils {
+  extension [T](t: T) def typeNameInfo = summon[TypeNameInfo[T]]
 
-  inline def typeName[T]: String =
+  extension [T, Out](using Encoder[T, Out])(t: T) def encode = summon[Encoder[T, Out]].encode(t)
+
+  extension [T](using Decoder[T])(t: String) def decode = summon[Decoder[T]].decode(t)
+
+  inline def erasedTypeName[T]: String =
     inline scala.compiletime.erasedValue[T] match {
       case _: String  => classOf[String].getSimpleName
       case _: Int     => classOf[Int].getSimpleName
@@ -47,7 +54,7 @@ object Bitlapx:
       case _: Null    => "Null"
     }
 
-  def fullName[T](using quotes: Quotes, tpe: Type[T]) = {
+  def fullName[T: Type](using quotes: Quotes) = {
     import quotes.reflect.*
     TypeTree.of[T].symbol.fullName
   }
@@ -61,7 +68,7 @@ object Bitlapx:
   def from[T: Type, R: Type](f: Expr[T => R])(using Quotes): Expr[T] => Expr[R] =
     (x: Expr[T]) => '{ $f($x) }
 
-  inline def showTree[A](inline a: A): String = ${ showTreeImpl[A]('{ a }) }
+  inline def showTree_[A](inline a: A): String = ${ showTreeImpl[A]('{ a }) }
 
   def showTreeImpl[A: Type](a: Expr[A])(using Quotes): Expr[String] =
     import quotes.reflect.*
@@ -76,8 +83,13 @@ object Bitlapx:
       headStr :: tailStr
   }
 
-  inline def labels[T](using m: Mirror.ProductOf[T]): List[String] =
+  inline def labels[T](using m: Mirror.Of[T]): List[String] =
     tupleTypeToString[m.MirroredElemLabels]
+
+  inline def labelsToList[T <: Tuple]: List[String] = inline erasedValue[T] match {
+    case _: EmptyTuple => Nil
+    case _: (t *: ts)  => constValue[t].toString :: labelsToList[ts]
+  }
 
   transparent inline def summonInlineOpt[T]: Option[T] = summonFrom {
     case t: T => Some(t)
@@ -104,6 +116,26 @@ object Bitlapx:
       }
     }
 
+  inline def debug(inline exprs: Any*): Unit = ${ debugImpl('{ exprs }) }
+
+  private def debugImpl(exprs: Expr[Seq[Any]])(using q: Quotes): Expr[Unit] =
+    import q.reflect._
+
+    def showWithValue(e: Expr[_]): Expr[String] = '{ ${ Expr(e.show) } + " = " + $e }
+
+    val stringExps: Seq[Expr[String]] = exprs match
+      case Varargs(es) =>
+        es.map { e =>
+          e.asTerm match {
+            case Literal(c: Constant) => Expr(c.value.toString)
+            case _                    => showWithValue(e)
+          }
+        }
+      case e => List(showWithValue(e))
+
+    val concatenatedStringsExp = stringExps.reduceOption((e1, e2) => '{ ${ e1 } + ", " + ${ e2 } }).getOrElse('{ "" })
+    printAtTime('{ "expr" }, concatenatedStringsExp)
+
   private def exprAsCompactString[T: Type](expr: Expr[T])(using ctx: Quotes): String = {
     import ctx.reflect._
     expr.asTerm match {
@@ -112,10 +144,13 @@ object Bitlapx:
     }
   }
 
-  extension [T](t: T) {
-    def show(using Showx[T]): String = summon[Showx[T]].show(t)
+  inline def isExpectedReturnType[R: Type](using quotes: Quotes): quotes.reflect.Symbol => Boolean = { method =>
+    import quotes.reflect.*
+    val expectedReturnType = TypeRepr.of[R]
+    method.tree match {
+      case DefDef(_, _, typedTree, _) =>
+        TypeRepr.of(using typedTree.tpe.asType) <:< expectedReturnType
+      case _ => false
+    }
   }
-
-  extension [T <: Product](self: T) {
-    def debug: Unit = Debugger.debug(self)
-  }
+}

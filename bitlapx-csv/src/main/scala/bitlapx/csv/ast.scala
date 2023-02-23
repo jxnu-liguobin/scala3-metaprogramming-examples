@@ -19,20 +19,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package bitlapx.common
-
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+package bitlapx.csv
 
 /** @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/2/23
  */
-class ClientSpec extends AnyFlatSpec with Matchers {
+object ast {
+  enum ParseError(label: String):
+    case InvalidValue(value: String, targetType: String, label: String = "") extends ParseError(label)
+    case NoValue(label: String = "")                                         extends ParseError(label)
+  end ParseError
 
-  "Client client" should "ok" in {
-    val rs = Client.client[Command, Int](() => 123).run2("2")
-    rs shouldEqual 123
-  }
+  final case class ParseSuccess[+A](remainder: List[String], value: A)
 
+  type ParseResult[T] = Either[ParseError, ParseSuccess[T]]
+
+  def fail[A](error: ParseError): Either[ParseError, A] = Left(error)
+
+  def success[A](value: A, remainder: List[String]) = Right(
+    ParseSuccess(remainder, value)
+  )
 }

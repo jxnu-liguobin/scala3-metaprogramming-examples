@@ -21,13 +21,17 @@
 
 package bitlapx.json
 
-import bitlapx.json.adts.*
-import magnolia1.{ AutoDerivation, CaseClass, SealedTrait }
+import bitlapx.json.ast.*
+import magnolia1.*
 
 import scala.collection.immutable.ListMap
 import scala.deriving.Mirror
 import scala.reflect.ClassTag
 
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/2/24
+ */
 object DeriveJsonCodec:
   inline def gen[A](using mirror: Mirror.Of[A], ct: ClassTag[A]) = {
     val encoder = DeriveJsonEncoder.gen[A]

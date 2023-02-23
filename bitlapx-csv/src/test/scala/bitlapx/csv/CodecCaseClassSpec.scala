@@ -21,7 +21,7 @@
 
 package bitlapx.csv
 
-import bitlapx.csv.{ ParseError, ParseSuccess }
+import bitlapx.csv.ast.*
 import bitlapx.csv.syntax.*
 import bitlapx.csv.Encoder.*
 

@@ -21,8 +21,25 @@
 
 package bitlapx.common
 
-trait Command {
-  def run1(): Int
-  def run2(foo: String): Int
-  def run3: Int
-}
+import magnolia1.*
+
+trait TypeNameInfo[T]:
+  def name: TypeInfo
+  def subtypeNames: Seq[TypeInfo]
+end TypeNameInfo
+
+object TypeNameInfo extends Derivation[TypeNameInfo]:
+  def join[T](ctx: CaseClass[TypeNameInfo, T]): TypeNameInfo[T] =
+    new TypeNameInfo[T]:
+      def name: TypeInfo              = ctx.typeInfo
+      def subtypeNames: Seq[TypeInfo] = Nil
+
+  override def split[T](ctx: SealedTrait[TypeNameInfo, T]): TypeNameInfo[T] =
+    new TypeNameInfo[T]:
+      def name: TypeInfo              = ctx.typeInfo
+      def subtypeNames: Seq[TypeInfo] = ctx.subtypes.map(_.typeInfo)
+
+  given fallback[T]: TypeNameInfo[T] =
+    new TypeNameInfo[T]:
+      def name: TypeInfo              = TypeInfo("", "Unknown Type", Seq.empty)
+      def subtypeNames: Seq[TypeInfo] = Nil

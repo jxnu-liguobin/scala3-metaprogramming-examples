@@ -21,6 +21,8 @@
 
 package bitlapx.common
 
+import scala.quoted.*
+
 /** @author
  *    梦境迷离
  *  @version 1.0,2023/2/21
@@ -33,6 +35,6 @@ final case class CaseClassA(
 
 final case class CaseClassB(a: Int)
 
-final case class Test1(f1: String, f2: Int) derives Showx
-final case class Test2(token: String, tx: Long) derives Showx
-final case class Test3(x: Int, t2: Test2) derives Showx
+final case class Test1(f1: String, f2: Int) derives TypeNameInfo
+final case class Test2(token: String, tx: Long)
+final case class Test3(x: Int, t2: Test2)

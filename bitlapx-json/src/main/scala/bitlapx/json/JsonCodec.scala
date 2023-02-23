@@ -21,15 +21,14 @@
 
 package bitlapx.json
 
-import bitlapx.common.Bitlapx
-import bitlapx.json.adts.*
+import bitlapx.json.ast.*
 
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.reflect.ClassTag
 import scala.runtime.Tuples
-import scala.util.{ Either, Right }
+import scala.util.*
 
 /** @author
  *    梦境迷离

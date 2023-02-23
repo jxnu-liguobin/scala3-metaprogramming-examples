@@ -21,23 +21,54 @@
 
 package bitlapx.common
 
-import bitlapx.common.Bitlapx.*
+import SimpleUtils.*
+import magnolia1.TypeInfo
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+
+import scala.quoted.*
 
 /** @author
  *    梦境迷离
  *  @version 1.0,2023/2/21
  */
-class DebuggerSpec extends AnyFlatSpec with Matchers {
+class SyntaxSpec extends AnyFlatSpec with Matchers {
 
-  "Debugger" should "compile pass" in {
+  "show" should "ok" in {
+    given Encoder[Test1, String] = Encoder.derived[Test1]
+    given Encoder[Test2, String] = Encoder.derived[Test2]
+    given Encoder[Test3, String] = Encoder.derived[Test3]
 
+    val fs = labels[Test2]
+    val s1 = summon[Encoder[Test1, String]].encode(Test1("x", 20))
+    val s2 = summon[Encoder[Test2, String]].encode(Test2("xyz", 100L))
+    val s3 = summon[Encoder[Test3, String]].encode(Test3(5, Test2("abc", 200L)))
+    fs shouldEqual List("token", "tx")
+    s1 shouldEqual "Test1(f1=x,f2=20)"
+    s2 shouldEqual "Test2(token=***,tx=100L)"
+    s3 shouldEqual "Test3(x=5,t2=Test2(token=***,tx=200L))"
+  }
+
+  "TypeNameInfo" should "ok" in {
+    val s1 = summon[TypeNameInfo[Test1]]
+    s1.name shouldEqual TypeInfo("bitlapx.common", "Test1", List())
+    s1.subtypeNames shouldEqual List()
+  }
+
+  "timed" should "compile pass" in {
+    """
+      |import scala.concurrent.Future
+      |import scala.concurrent.ExecutionContext.Implicits.global
+      |timed {
+      |  println("hello world")
+      |}""".stripMargin should compile
+  }
+
+  "debug" should "compile pass" in {
     """
       |def hello =
       |   CaseClassA(1, "hello", CaseClassB(1))
       |
-      |Debugger.debug(hello)
-      |hello.debug""".stripMargin should compile
+      |debug(hello)""".stripMargin should compile
   }
 }

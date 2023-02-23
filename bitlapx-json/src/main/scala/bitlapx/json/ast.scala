@@ -21,8 +21,7 @@
 
 package bitlapx.json
 
-import bitlapx.common.Bitlapx.typeName
-import bitlapx.json.adts.Json.*
+import bitlapx.json.ast.Json.*
 
 import scala.collection.immutable.ListMap
 
@@ -30,7 +29,7 @@ import scala.collection.immutable.ListMap
  *    梦境迷离
  *  @version 1.0,2023/2/23
  */
-object adts {
+object ast {
   type Error     = String
   type Result[V] = Either[Error, V]
 

@@ -21,20 +21,21 @@
 
 package bitlapx.json
 
-import bitlapx.common.Bitlapx.{ summonInlineOpt, typeName }
-import adts.*
-import bitlapx.common.Bitlapx
+import ast.*
 import bitlapx.json
-import magnolia1.{ AutoDerivation, CaseClass, SealedTrait }
 
 import scala.deriving.Mirror
-import scala.reflect.{ classTag, ClassTag }
+import scala.reflect.*
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
-import scala.quoted.{ Quotes, Type }
+import scala.quoted.*
 import scala.util.Right
 
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/2/24
+ */
 trait JsonDecoder[A]:
 
   def decode(json: Json): Result[A]

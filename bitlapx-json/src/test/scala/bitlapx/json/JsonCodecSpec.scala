@@ -21,7 +21,7 @@
 
 package bitlapx.json
 
-import bitlapx.json.adts.*
+import bitlapx.json.ast.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

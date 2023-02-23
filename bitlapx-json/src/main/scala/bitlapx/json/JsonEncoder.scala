@@ -21,16 +21,18 @@
 
 package bitlapx.json
 
-import bitlapx.common.Bitlapx
-import adts.*
+import ast.*
 import bitlapx.json
-import magnolia1.{ AutoDerivation, CaseClass, SealedTrait }
-
+import bitlapx.common.SimpleUtils.*
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.deriving.Mirror
 
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/2/24
+ */
 trait JsonEncoder[A]:
 
   def encode(a: A): Json
@@ -71,6 +73,6 @@ object JsonEncoder:
     case _: (t *: ts, l *: ls) =>
       val js    = summonInline[JsonEncoder[t]]
       val label = constValue[l].asInstanceOf[String]
-      val value = js.encode(Bitlapx.productElement[t](v, i))
+      val value = js.encode(productElement[t](v, i))
 
       toListMap[ts, ls, V](v, i + 1) + (label -> value)

@@ -63,7 +63,7 @@ object Selector:
         extractFields(term, field +: acc)
       case Ident(_) => acc
       case _ =>
-        report.throwError(
+        report.errorAndAbort(
           s"Expected selector, got $term"
         )
     }
@@ -78,7 +78,7 @@ object Selector:
           })
         }
       case _ =>
-        report.throwError(
+        report.errorAndAbort(
           s"Expected inlined lambda, got ${selector.show}"
         )
     }

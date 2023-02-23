@@ -1,7 +1,7 @@
 import sbt.Test
 import sbtrelease.ReleaseStateTransformations._
 
-val scala3Version    = "3.2.0"
+val scala3Version    = "3.2.2"
 val scalatestVersion = "3.2.14"
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
@@ -9,7 +9,7 @@ ThisBuild / resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   "New snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 )
-
+Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val commonSettings =
   Seq(
     organization                  := "org.bitlap",
@@ -22,10 +22,16 @@ lazy val commonSettings =
     Test / fork               := true,
     publishConfiguration      := publishConfiguration.value.withOverwrite(true),
     publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
-    scalacOptions ++= Seq("-language:dynamics", "-Xcheck-macros"),
+    scalacOptions ++= Seq(
+      /** "-Ycheck:all",** */
+      "-language:dynamics",
+      "-explain"
+    ),
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % scalatestVersion % Test
-    )
+    ),
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+    scalacOptions ++= Seq("unchecked", "-deprecation", "-feature", "-Werror")
   ) ++ Publishing.publishSettings
 
 lazy val bitlapx = project
@@ -82,6 +88,19 @@ lazy val `bitlapx-json` = project
 lazy val `bitlapx-common` = project
   .in(file("bitlapx-common"))
   .settings(
-    name := "bitlapx-common"
+    name := "bitlapx-common",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.magnolia1_3" %% "magnolia" % "1.1.1",
+      "org.scalameta"                %% "munit"    % "1.0.0-M3" % Test
+    )
   )
   .settings(commonSettings)
+
+coverageHighlighting            := true
+coverageFailOnMinimum           := false
+coverageMinimumStmtTotal        := 70
+coverageMinimumBranchTotal      := 70
+coverageMinimumStmtPerPackage   := 70
+coverageMinimumBranchPerPackage := 70
+coverageMinimumStmtPerFile      := 70
+coverageMinimumBranchPerFile    := 70
