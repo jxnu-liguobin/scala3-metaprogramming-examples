@@ -35,11 +35,9 @@ class DebuggerSpec extends AnyFlatSpec with Matchers {
 
     """
       |def hello =
-      |    CaseClassA(1, "hello", CaseClassB(1))
+      |   CaseClassA(1, "hello", CaseClassB(1))
       |
-      |  Debugger.debug(hello)
-      |
-      |  hello.debug
-      |""" should compile
+      |Debugger.debug(hello)
+      |hello.debug""".stripMargin should compile
   }
 }
