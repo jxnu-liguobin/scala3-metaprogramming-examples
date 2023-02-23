@@ -1,0 +1,60 @@
+package bitlapx.json
+
+import bitlapx.common.Bitlapx.typeName
+import bitlapx.json.adts.Json.*
+
+import scala.collection.immutable.ListMap
+
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/2/23
+ */
+object adts {
+  type Error     = String
+  type Result[V] = Either[Error, V]
+
+  sealed abstract class Json {
+    self =>
+    def prettyPrint: String = this match
+      case Str(value)  => value
+      case Num(value)  => value.toString
+      case Bool(value) => value.toString
+      case Arr(list)   => s"[${list.map(_.prettyPrint).mkString(", ")}]"
+      case Obj(map)    => s"{${map.map(this.toObjectPair).mkString(", ")}}"
+      case Json.Null   => "null"
+
+    private def toObjectPair(k: String, v: Json): String = s""""$k": ${v.prettyPrint}"""
+
+  }
+
+  object Json {
+    final case class Str(value: String) extends Json
+
+    final case class Num(value: java.math.BigDecimal) extends Json
+
+    object Num {
+      def apply(value: Byte): Num = Num(BigDecimal(value.toInt).bigDecimal)
+
+      def apply(value: Short): Num = Num(BigDecimal(value.toInt).bigDecimal)
+
+      def apply(value: Int): Num = Num(BigDecimal(value).bigDecimal)
+
+      def apply(value: Long): Num = Num(BigDecimal(value).bigDecimal)
+
+      def apply(value: BigDecimal): Num = Num(value.bigDecimal)
+
+      def apply(value: Float): Num = Num(BigDecimal(value).bigDecimal)
+
+      def apply(value: Double): Num = Num(BigDecimal(value).bigDecimal)
+    }
+
+    final case class Bool(value: Boolean) extends Json
+
+    final case class Arr(list: List[Json]) extends Json
+
+    final case class Obj(map: ListMap[String, Json]) extends Json
+
+    case object Null extends Json
+  }
+
+}
