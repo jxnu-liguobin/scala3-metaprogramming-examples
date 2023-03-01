@@ -4,9 +4,8 @@ val scala3Version    = "3.2.2"
 val scalatestVersion = "3.2.14"
 ThisBuild / resolvers ++= Seq(
   Resolver.mavenLocal,
-  Resolver.sonatypeRepo("public"),
-  Resolver.sonatypeRepo("snapshots"),
-  "New snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+  "Sonatype OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
 )
 sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
