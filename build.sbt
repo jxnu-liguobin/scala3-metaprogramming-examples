@@ -7,14 +7,15 @@ ThisBuild / resolvers ++= Seq(
   "Sonatype OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
   "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
 )
-sonatypeCredentialHost := "s01.oss.sonatype.org"
-sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
 
 inThisBuild(
   List(
-    organization := "org.bitlap",
-    homepage     := Some(url("https://github.com/bitlap/bitlap")),
-    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    organization           := "org.bitlap",
+    sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository :=
+      "https://s01.oss.sonatype.org/service/local",
+    homepage := Some(url("https://github.com/bitlap/bitlap")),
+    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     developers := List(
       Developer(
         id = "dreamylost",
