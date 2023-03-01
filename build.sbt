@@ -12,6 +12,22 @@ ThisBuild / resolvers ++= Seq(
 sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository     := "https://s01.oss.sonatype.org/service/local"
 
+inThisBuild(
+  List(
+    organization := "org.bitlap",
+    homepage     := Some(url("https://github.com/bitlap/bitlap")),
+    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        id = "dreamylost",
+        name = "梦境迷离",
+        email = "dreamylost@outlook.com",
+        url = url("https://dreamylost.cn")
+      )
+    )
+  )
+)
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val commonSettings =
   Seq(
@@ -35,7 +51,7 @@ lazy val commonSettings =
     ),
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     scalacOptions ++= Seq("unchecked", "-deprecation", "-feature", "-Werror")
-  ) ++ Publishing.publishSettings
+  )
 
 lazy val bitlapx = project
   .in(file("."))
