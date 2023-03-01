@@ -57,12 +57,8 @@ lazy val bitlapx = project
   .aggregate(`bitlapx-csv`, `bitlapx-common`, `bitlapx-json`)
   .settings(
     commands ++= Commands.value,
-    crossScalaVersions            := Nil,
-    publish / skip                := true,
-    releaseIgnoreUntrackedFiles   := true,
-    releaseCrossBuild             := false, // @see https://www.scala-sbt.org/1.x/docs/Cross-Build.html
-    releaseTagName                := (ThisBuild / version).value,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value
+    crossScalaVersions := Nil,
+    publish / skip     := true
   )
 
 lazy val `bitlapx-csv` = project
