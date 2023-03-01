@@ -1,5 +1,4 @@
 import sbt.Test
-import sbtrelease.ReleaseStateTransformations._
 
 val scala3Version    = "3.2.2"
 val scalatestVersion = "3.2.14"
@@ -22,7 +21,7 @@ inThisBuild(
         id = "dreamylost",
         name = "梦境迷离",
         email = "dreamylost@outlook.com",
-        url = url("https://dreamylost.cn")
+        url = url("https://blog.dreamylost.cn")
       )
     )
   )
@@ -63,21 +62,7 @@ lazy val bitlapx = project
     releaseIgnoreUntrackedFiles   := true,
     releaseCrossBuild             := false, // @see https://www.scala-sbt.org/1.x/docs/Cross-Build.html
     releaseTagName                := (ThisBuild / version).value,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      releaseStepCommandAndRemaining("+compile"),
-      releaseStepCommandAndRemaining("test"),
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
 
 lazy val `bitlapx-csv` = project
