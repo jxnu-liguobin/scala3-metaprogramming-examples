@@ -26,10 +26,9 @@ import scala.annotation.tailrec
 import scala.compiletime.*
 import scala.quoted.*
 
-/**
- *
- * @author 梦境迷离
- * @version 1.0,2023/3/1
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/3/1
  */
 object MacroUtils {
 
@@ -42,7 +41,7 @@ object MacroUtils {
 
     def fieldTypes[A: Type]: List[quotes.reflect.TypeRepr] =
       Expr.summon[Mirror.ProductOf[A]].get match
-        case '{ $p: Mirror.ProductOf[A] {type MirroredElemTypes = tpes} } =>
+        case '{ $p: Mirror.ProductOf[A] { type MirroredElemTypes = tpes } } =>
           quotes.reflect.TypeRepr.of[tpes].tupleToList
 
     def makeTuple(args: List[quotes.reflect.TypeRepr]): quotes.reflect.TypeRepr =
@@ -77,13 +76,13 @@ object MacroUtils {
       import quotes.reflect.*
       self match
         case AppliedType(t, _) => t.unapplied
-        case _ => self
+        case _                 => self
 
     def valueAs[A]: A =
       import quotes.reflect.*
       self.asType match
         case '[t] => Type.valueOfConstant[t].get.asInstanceOf[A]
-        case _ => report.errorAndAbort(s"Expected a literal, but got ${self.show}")
+        case _    => report.errorAndAbort(s"Expected a literal, but got ${self.show}")
 
     def isGeneric: Boolean =
       import quotes.reflect.*
@@ -97,7 +96,7 @@ object MacroUtils {
     def tupleToList: List[quotes.reflect.TypeRepr] =
       import quotes.reflect.*
       self.asType match
-        case '[t *: ts] => TypeRepr.of[t] :: TypeRepr.of[ts].tupleToList
+        case '[t *: ts]    => TypeRepr.of[t] :: TypeRepr.of[ts].tupleToList
         case '[EmptyTuple] => Nil
 
   extension (using Quotes)(self: quotes.reflect.Term.type)
@@ -115,10 +114,10 @@ object MacroUtils {
       Select.unique(self, name)
 
     def selectOverloaded(
-                          name: String,
-                          targs: List[quotes.reflect.TypeRepr],
-                          args: List[quotes.reflect.Term]
-                        ): quotes.reflect.Term =
+      name: String,
+      targs: List[quotes.reflect.TypeRepr],
+      args: List[quotes.reflect.Term]
+    ): quotes.reflect.Term =
       import quotes.reflect.*
       Select.overloaded(self, name, targs, args)
 
@@ -129,10 +128,10 @@ object MacroUtils {
       TermUtils.callImpl(self, name, List.empty[quotes.reflect.TypeRepr], args)
 
     def call(
-              name: String,
-              targs: List[quotes.reflect.TypeRepr],
-              args: List[quotes.reflect.Term] = List.empty
-            ): quotes.reflect.Term =
+      name: String,
+      targs: List[quotes.reflect.TypeRepr],
+      args: List[quotes.reflect.Term] = List.empty
+    ): quotes.reflect.Term =
       TermUtils.callImpl(self, name, targs, args)
 
   object TermUtils:
@@ -147,7 +146,7 @@ object MacroUtils {
       val symbol = self.symbol.methodMember(name).headOption.getOrElse(self.symbol.fieldMember(name))
       symbol.paramSymss match
         case Nil => self.selectUnique(name)
-        case _ => self.selectOverloaded(name, targs, args)
+        case _   => self.selectOverloaded(name, targs, args)
 
   object Uninlined:
     @tailrec
@@ -155,7 +154,7 @@ object MacroUtils {
       import quotes.reflect.*
       term match
         case Inlined(_, _, t) => Uninlined.unapply(t)
-        case t => Some(t)
+        case t                => Some(t)
 
   object UnderlyingTypeConstructor:
     /** Extracts the underlying function term of a function application.
@@ -165,6 +164,6 @@ object MacroUtils {
       import quotes.reflect.*
       term match
         case AppliedType(t, _) => UnderlyingTypeConstructor.unapply(t)
-        case t => Some(t)
+        case t                 => Some(t)
 
 }

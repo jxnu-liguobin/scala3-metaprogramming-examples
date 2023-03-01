@@ -9,6 +9,9 @@ ThisBuild / resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   "New snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 )
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val commonSettings =
   Seq(
