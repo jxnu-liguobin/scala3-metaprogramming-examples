@@ -52,25 +52,36 @@ jobs:
 
       - name: Upload test coverage report
         if: success() || failure()
-        run: bash <(curl -s https://codecov.io/bash)
+        run: bash <(curl -s https://codecov.io/bash) 
+
+  ci:
+    runs-on: ubuntu-20.04
+    needs: [ build, test]
+    steps:
+      - name: Aggregate outcomes
+        run: echo "build succeeded"
         
   publish:
     runs-on: ubuntu-20.04
+    needs: [ci]
+    if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2.3.4
+      - name: Checkout current branch
+        uses: actions/checkout@v3.3.0
         with:
           fetch-depth: 0
-      - uses: olafurpg/setup-scala@v10
-      - run: sbt ci-release
+      - name: Setup Java
+        uses: actions/setup-java@v3.9.0
+        with:
+          distribution: temurin
+          java-version: 8
+          check-latest: true
+      - name: Cache scala dependencies
+        uses: coursier/cache-action@v6
+      - name: Release artifacts
+        run: sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}   
-
-  ci:
-    runs-on: ubuntu-20.04
-    needs: [ build, test ]
-    steps:
-      - name: Aggregate outcomes
-        run: echo "build succeeded"
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}        
