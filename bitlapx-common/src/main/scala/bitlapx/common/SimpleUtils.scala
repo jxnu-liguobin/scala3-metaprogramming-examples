@@ -22,12 +22,14 @@
 package bitlapx.common
 
 import bitlapx.common.*
+
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import scala.deriving.Mirror
 import scala.annotation.tailrec
 import scala.compiletime.*
 import scala.quoted.*
+import scala.reflect.{ classTag, ClassTag }
 
 /** @author
  *    梦境迷离
@@ -40,24 +42,13 @@ object SimpleUtils {
 
   extension [T](using Decoder[T])(t: String) def decode = summon[Decoder[T]].decode(t)
 
-  inline def erasedTypeName[T]: String =
-    inline scala.compiletime.erasedValue[T] match {
-      case _: String  => classOf[String].getSimpleName
-      case _: Int     => classOf[Int].getSimpleName
-      case _: Char    => classOf[Char].getSimpleName
-      case _: Boolean => classOf[Boolean].getSimpleName
-      case _: Short   => classOf[Short].getSimpleName
-      case _: Long    => classOf[Long].getSimpleName
-      case _: Float   => classOf[Float].getSimpleName
-      case _: Double  => classOf[Double].getSimpleName
-      case _: Byte    => classOf[Byte].getSimpleName
-      case _: Null    => "Null"
-    }
-
   def fullName[T: Type](using quotes: Quotes) = {
     import quotes.reflect.*
     TypeTree.of[T].symbol.fullName
   }
+
+  def runtimeName[T: ClassTag] =
+    classTag[T].runtimeClass.getTypeName
 
   def productElement[T](x: Any, idx: Int) =
     x.asInstanceOf[Product].productElement(idx).asInstanceOf[T]
@@ -68,9 +59,9 @@ object SimpleUtils {
   def from[T: Type, R: Type](f: Expr[T => R])(using Quotes): Expr[T] => Expr[R] =
     (x: Expr[T]) => '{ $f($x) }
 
-  inline def showTree_[A](inline a: A): String = ${ showTreeImpl[A]('{ a }) }
+  inline def showTree_[A](inline a: A): String = ${ showTree[A]('{ a }) }
 
-  def showTreeImpl[A: Type](a: Expr[A])(using Quotes): Expr[String] =
+  def showTree[A: Type](a: Expr[A])(using Quotes): Expr[String] =
     import quotes.reflect.*
     //    Expr(a.asTerm.show)
     Expr(Printer.TreeStructure.show(a.asTerm))
@@ -100,20 +91,6 @@ object SimpleUtils {
     '{
       val start = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"))
       println("time [" + start + "] | " + ${ key } + " [" + ${ expr } + "]")
-    }
-
-  inline def timed[T](inline expr: T): T = ${ timedImpl('{ expr }) }
-
-  private def timedImpl[T: Type](expr: Expr[T])(using Quotes): Expr[T] =
-    '{
-      val start = System.currentTimeMillis()
-      try $expr
-      finally {
-        val end               = System.currentTimeMillis()
-        val exprAsString      = ${ Expr(exprAsCompactString(expr)) }.replaceAll("\\s+", " ").trim()
-        val exprAsStringShort = if (exprAsString.length > 120) exprAsString.take(120) + "..." else exprAsString
-        println(s"Evaluating $exprAsStringShort took: ${end - start}ms")
-      }
     }
 
   inline def debug(inline exprs: Any*): Unit = ${ debugImpl('{ exprs }) }

@@ -26,20 +26,36 @@ import magnolia1.*
 trait TypeNameInfo[T]:
   def name: TypeInfo
   def subtypeNames: Seq[TypeInfo]
+  def isValueClass: Boolean
+  def isEnum: Boolean
+  def paramNames: Map[Int, String]
+  def annotations: List[Any]
 end TypeNameInfo
 
 object TypeNameInfo extends Derivation[TypeNameInfo]:
-  def join[T](ctx: CaseClass[TypeNameInfo, T]): TypeNameInfo[T] =
+  override def join[T](ctx: CaseClass[TypeNameInfo, T]): TypeNameInfo[T] =
     new TypeNameInfo[T]:
-      def name: TypeInfo              = ctx.typeInfo
-      def subtypeNames: Seq[TypeInfo] = Nil
+      def name: TypeInfo               = ctx.typeInfo
+      def subtypeNames: Seq[TypeInfo]  = Nil
+      def isValueClass: Boolean        = ctx.isValueClass
+      def isEnum: Boolean              = false
+      def paramNames: Map[Int, String] = ctx.params.map(p => p.index -> p.label).toMap
+      def annotations: List[Any]       = ctx.annotations.toList
 
   override def split[T](ctx: SealedTrait[TypeNameInfo, T]): TypeNameInfo[T] =
     new TypeNameInfo[T]:
-      def name: TypeInfo              = ctx.typeInfo
-      def subtypeNames: Seq[TypeInfo] = ctx.subtypes.map(_.typeInfo)
+      def name: TypeInfo               = ctx.typeInfo
+      def subtypeNames: Seq[TypeInfo]  = ctx.subtypes.map(_.typeInfo)
+      def isValueClass: Boolean        = false
+      def isEnum: Boolean              = ctx.isEnum
+      def paramNames: Map[Int, String] = Map.empty
+      def annotations: List[Any]       = ctx.annotations.toList
 
   given fallback[T]: TypeNameInfo[T] =
     new TypeNameInfo[T]:
-      def name: TypeInfo              = TypeInfo("", "Unknown Type", Seq.empty)
-      def subtypeNames: Seq[TypeInfo] = Nil
+      def name: TypeInfo               = TypeInfo("", "Unknown Type", Seq.empty)
+      def subtypeNames: Seq[TypeInfo]  = Nil
+      def isValueClass: Boolean        = false
+      def isEnum: Boolean              = false
+      def paramNames: Map[Int, String] = Map.empty
+      def annotations: List[Any]       = Nil

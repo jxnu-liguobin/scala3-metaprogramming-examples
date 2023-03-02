@@ -116,7 +116,7 @@ object Decoder extends AutoDerivation[Decoder] {
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toIntOption
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Int])))(int => success(int, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Int])))(int => success(int, tail))
     }
 
   given Decoder[Short] = s =>
@@ -125,7 +125,7 @@ object Decoder extends AutoDerivation[Decoder] {
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toShortOption
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Short])))(s => success(s, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Short])))(s => success(s, tail))
     }
 
   given Decoder[Float] = s =>
@@ -134,7 +134,7 @@ object Decoder extends AutoDerivation[Decoder] {
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toFloatOption
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Float])))(f => success(f, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Float])))(f => success(f, tail))
     }
 
   given Decoder[Double] = s =>
@@ -143,7 +143,7 @@ object Decoder extends AutoDerivation[Decoder] {
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toDoubleOption
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Double])))(d => success(d, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Double])))(d => success(d, tail))
     }
 
   given Decoder[Char] = s =>
@@ -153,7 +153,7 @@ object Decoder extends AutoDerivation[Decoder] {
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toIntOption
           .map(_.toChar)
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Char])))(c => success(c, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Char])))(c => success(c, tail))
     }
 
   given Decoder[Byte] = s =>
@@ -162,7 +162,7 @@ object Decoder extends AutoDerivation[Decoder] {
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
         head.trim.toByteOption
-          .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Byte])))(b => success(b, tail))
+          .fold(fail(ParseError.InvalidValue(head, runtimeName[Byte])))(b => success(b, tail))
     }
 
   given Decoder[Boolean] = s =>
@@ -172,7 +172,7 @@ object Decoder extends AutoDerivation[Decoder] {
         if head.trim == "" then fail(ParseError.NoValue())
         else
           head.trim.toBooleanOption
-            .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Boolean])))(bool => success(bool, tail))
+            .fold(fail(ParseError.InvalidValue(head, runtimeName[Boolean])))(bool => success(bool, tail))
     }
 
   given Decoder[Long] = s =>
@@ -182,6 +182,6 @@ object Decoder extends AutoDerivation[Decoder] {
         if head.trim == "" then fail(ParseError.NoValue())
         else
           head.trim.toLongOption
-            .fold(fail(ParseError.InvalidValue(head, erasedTypeName[Long])))(l => success(l, tail))
+            .fold(fail(ParseError.InvalidValue(head, runtimeName[Long])))(l => success(l, tail))
     }
 }

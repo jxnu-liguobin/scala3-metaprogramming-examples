@@ -55,15 +55,6 @@ class SyntaxSpec extends AnyFlatSpec with Matchers {
     s1.subtypeNames shouldEqual List()
   }
 
-  "timed" should "compile pass" in {
-    """
-      |import scala.concurrent.Future
-      |import scala.concurrent.ExecutionContext.Implicits.global
-      |timed {
-      |  println("hello world")
-      |}""".stripMargin should compile
-  }
-
   "debug" should "compile pass" in {
     """
       |def hello =
