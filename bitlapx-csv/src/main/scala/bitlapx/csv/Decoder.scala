@@ -25,7 +25,7 @@ import magnolia1.*
 
 import scala.compiletime.{ constValue, erasedValue }
 import scala.deriving.Mirror
-import bitlapx.common.SimpleUtils.*
+import bitlapx.common.SimpleTools.*
 import bitlapx.csv.ast.*
 
 /** @author

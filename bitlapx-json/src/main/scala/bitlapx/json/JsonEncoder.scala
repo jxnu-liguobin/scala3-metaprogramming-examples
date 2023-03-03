@@ -23,7 +23,7 @@ package bitlapx.json
 
 import ast.*
 import bitlapx.json
-import bitlapx.common.SimpleUtils.*
+import bitlapx.common.SimpleTools.*
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
