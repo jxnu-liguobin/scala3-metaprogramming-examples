@@ -21,7 +21,7 @@
 
 package bitlapx.common
 
-import SimpleUtils.*
+import SimpleTools.*
 import magnolia1.TypeInfo
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

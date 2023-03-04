@@ -35,17 +35,18 @@ import scala.reflect.{ classTag, ClassTag }
  *    梦境迷离
  *  @version 1.0,2023/3/1
  */
-object SimpleUtils {
+object SimpleTools {
   extension [T](t: T) def typeNameInfo = summon[TypeNameInfo[T]]
 
   extension [T, Out](using Encoder[T, Out])(t: T) def encode = summon[Encoder[T, Out]].encode(t)
 
   extension [T](using Decoder[T])(t: String) def decode = summon[Decoder[T]].decode(t)
 
-  def fullName[T: Type](using quotes: Quotes) = {
-    import quotes.reflect.*
-    TypeTree.of[T].symbol.fullName
-  }
+  extension (tpe: Type[?])
+    def fullName(using Quotes): String = {
+      import quotes.reflect.*
+      TypeRepr.of(using tpe).show(using Printer.TypeReprCode)
+    }
 
   def runtimeName[T: ClassTag] =
     classTag[T].runtimeClass.getTypeName
@@ -87,15 +88,9 @@ object SimpleUtils {
     case _    => None
   }
 
-  inline def printAtTime(key: Expr[String], expr: Expr[Any])(using q: Quotes): Expr[Unit] =
-    '{
-      val start = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"))
-      println("time [" + start + "] | " + ${ key } + " [" + ${ expr } + "]")
-    }
-
   inline def debug(inline exprs: Any*): Unit = ${ debugImpl('{ exprs }) }
 
-  private def debugImpl(exprs: Expr[Seq[Any]])(using q: Quotes): Expr[Unit] =
+  private def debugImpl(exprs: Expr[Seq[Any]])(using q: Quotes): Expr[String] =
     import q.reflect._
 
     def showWithValue(e: Expr[_]): Expr[String] = '{ ${ Expr(e.show) } + " = " + $e }
@@ -110,8 +105,7 @@ object SimpleUtils {
         }
       case e => List(showWithValue(e))
 
-    val concatenatedStringsExp = stringExps.reduceOption((e1, e2) => '{ ${ e1 } + ", " + ${ e2 } }).getOrElse('{ "" })
-    printAtTime('{ "expr" }, concatenatedStringsExp)
+    stringExps.reduceOption((e1, e2) => '{ ${ e1 } + ", " + ${ e2 } }).getOrElse('{ "" })
 
   private def exprAsCompactString[T: Type](expr: Expr[T])(using ctx: Quotes): String = {
     import ctx.reflect._
