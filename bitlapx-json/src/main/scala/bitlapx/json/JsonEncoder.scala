@@ -24,6 +24,7 @@ package bitlapx.json
 import ast.*
 import bitlapx.json
 import bitlapx.common.SimpleTools.*
+
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
@@ -39,31 +40,44 @@ trait JsonEncoder[A]:
 
 end JsonEncoder
 
-object JsonEncoder:
+object JsonEncoder extends EncoderLowPriority1:
 
-  given JavaBigDecimalEncoder: JsonEncoder[java.math.BigDecimal] = (v: java.math.BigDecimal) => Json.Num(v)
+  def apply[A](implicit a: JsonEncoder[A]): JsonEncoder[A] = a
 
-  given SymbolEncoder: JsonEncoder[Symbol] = (v: Symbol) => Json.Str(v.name)
+  given javaBigDecimalEncoder: JsonEncoder[java.math.BigDecimal] = (v: java.math.BigDecimal) => Json.Num(v)
 
-  given BoolEncoder: JsonEncoder[Boolean] = (v: Boolean) => Json.Bool(v)
+  given symbolEncoder: JsonEncoder[Symbol] = (v: Symbol) => Json.Str(v.name)
 
-  given StringEncoder: JsonEncoder[String] = (v: String) => Json.Str(v)
+  given boolEncoder: JsonEncoder[Boolean] = (v: Boolean) => Json.Bool(v)
 
-  given ShortEncoder: JsonEncoder[Short] = (v: Short) => Json.Num(v)
+  given stringEncoder: JsonEncoder[String] = (v: String) => Json.Str(v)
 
-  given LongEncoder: JsonEncoder[Long] = (v: Long) => Json.Num(v)
+  given shortEncoder: JsonEncoder[Short] = (v: Short) => Json.Num(v)
 
-  given ByteEncoder: JsonEncoder[Byte] = (v: Byte) => Json.Num(v)
+  given longEncoder: JsonEncoder[Long] = (v: Long) => Json.Num(v)
 
-  given IntEncoder: JsonEncoder[Int] = (v: Int) => Json.Num(v)
+  given byteEncoder: JsonEncoder[Byte] = (v: Byte) => Json.Num(v)
 
-  given BigDecimalEncoder: JsonEncoder[BigDecimal] = (v: BigDecimal) => Json.Num(v)
+  given intEncoder: JsonEncoder[Int] = (v: Int) => Json.Num(v)
 
-  given FloatEncoder: JsonEncoder[Float] = (v: Float) => Json.Num(v)
+  given bigDecimalEncoder: JsonEncoder[BigDecimal] = (v: BigDecimal) => Json.Num(v)
 
-  given DoubleEncoder: JsonEncoder[Double] = (v: Double) => Json.Num(v)
+  given floatEncoder: JsonEncoder[Float] = (v: Float) => Json.Num(v)
 
-  given ArrEncoder[V](using js: JsonEncoder[V]): JsonEncoder[List[V]] = (list: List[V]) => Json.Arr(list map js.encode)
+  given doubleEncoder: JsonEncoder[Double] = (v: Double) => Json.Num(v)
+
+  given arrEncoder[V](using js: JsonEncoder[V]): JsonEncoder[List[V]] = (list: List[V]) => Json.Arr(list map js.encode)
+
+  given option[A](using jsonEncoder: JsonEncoder[A]): JsonEncoder[Option[A]] = (a: Option[A]) =>
+    a match
+      case None    => Json.Null
+      case Some(a) => jsonEncoder.encode(a)
+
+  given either[A, B](using jsonEncoderA: JsonEncoder[A], jsonEncoderB: JsonEncoder[B]): JsonEncoder[Either[A, B]] =
+    (a: Either[A, B]) =>
+      a match
+        case Left(a)  => jsonEncoderA.encode(a)
+        case Right(b) => jsonEncoderB.encode(b)
 
   inline given derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) =>
     Json.Obj(toListMap[m.MirroredElemTypes, m.MirroredElemLabels, V](v, 0))

@@ -24,7 +24,8 @@ package bitlapx.json
 import bitlapx.json.ast.*
 import magnolia1.*
 
-import scala.collection.immutable.ListMap
+import scala.collection.immutable.*
+import scala.collection.mutable
 import scala.deriving.Mirror
 import scala.reflect.ClassTag
 
@@ -42,16 +43,20 @@ object DeriveJsonCodec:
 object DeriveJsonEncoder extends AutoDerivation[JsonEncoder]:
   self =>
 
-  override def join[A](ctx: CaseClass[Typeclass, A]): Typeclass[A] = (a: A) =>
-    Json.Obj(
-      ctx.params
-        .foldLeft[ListMap[String, Json]](ListMap.empty) { case (chunk, param) =>
-          val name  = param.label
-          val value = param.typeclass.encode(param.deref(a))
-          if (value == Json.Null) chunk
-          else ListMap(name -> value) ++ chunk
-        }
-    )
+  override def join[A](ctx: CaseClass[Typeclass, A]): Typeclass[A] =
+    if (ctx.params.isEmpty) { (_: A) =>
+      Json.Obj(ListMap.empty)
+    } else
+      (a: A) =>
+        Json.Obj(
+          ctx.params
+            .foldLeft[ListMap[String, Json]](ListMap.empty) { case (chunk, param) =>
+              val name  = param.label
+              val value = param.typeclass.encode(param.deref(a))
+              if (value == Json.Null) chunk
+              else chunk ++ ListMap(name -> value)
+            }
+        )
 
   override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = (a: T) =>
     ctx.choose(a) { sub =>
@@ -65,14 +70,47 @@ object DeriveJsonEncoder extends AutoDerivation[JsonEncoder]:
 
   inline def gen[A](using mirror: Mirror.Of[A]) = self.derived[A]
 
-object DeriveJsonDecoder:
+object DeriveJsonDecoder extends AutoDerivation[JsonDecoder]:
   self =>
 
-// TODO
-//  override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = new JsonDecoder[T]:
-//    override def decode(js: Json): Result[T] = ???
-//
-//  override def join[T](ctx: CaseClass[Typeclass, T]): Typeclass[T] = new JsonDecoder[T]:
-//    override def decode(json: Json): Result[T] = ???
+  override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = (json: Json) =>
+    val names: Array[String] = IArray.genericWrapArray(ctx.subtypes.map(p => p.typeInfo.short)).toArray
+    lazy val tcs: Array[JsonDecoder[Any]] =
+      IArray.genericWrapArray(ctx.subtypes.map(_.typeclass)).toArray.asInstanceOf[Array[JsonDecoder[Any]]]
+    lazy val namesMap: Map[String, Int] =
+      names.zipWithIndex.toMap
+    json match
+      case Json.Obj(chunk) if chunk.size == 1 =>
+        val (key, inner) = chunk.head
+        namesMap.get(key) match {
+          case Some(idx) => tcs(idx).decode(inner).map(_.asInstanceOf[T])
+          case None      => Left("Invalid disambiguator")
+        }
+      case Json.Obj(_) => Left("Not an object with a single field")
+      case _           => Left("Not an object")
 
-  inline def gen[A](using mirror: Mirror.Of[A], ct: ClassTag[A]) = JsonDecoder.derived[A]
+  override def join[T](ctx: CaseClass[Typeclass, T]): Typeclass[T] = (json: Json) =>
+    val names: Array[String] =
+      IArray.genericWrapArray(ctx.params.map(_.label)).toArray
+    val len                             = names.length
+    lazy val namesMap: Map[String, Int] = names.zipWithIndex.toMap
+    val tcs: Array[JsonDecoder[Any]] =
+      IArray.genericWrapArray(ctx.params.map(_.typeclass)).toArray.asInstanceOf[Array[JsonDecoder[Any]]]
+    val failures = new mutable.LinkedHashSet[String]
+    json match
+      case Json.Obj(fields) =>
+        val ps: Array[Any] = Array.ofDim(len)
+        for ((key, value) <- fields)
+          namesMap.get(key) match {
+            case Some(field) =>
+              ps(field) = tcs(field).decode(value) match {
+                case Left(error)  => failures += error; null
+                case Right(value) => value
+              }
+            case None => Left("Invalid extra field")
+          }
+
+        Right(ctx.rawConstruct(ArraySeq.unsafeWrapArray(ps)))
+      case _ => Left("Not an object")
+
+  inline def gen[A](using mirror: Mirror.Of[A], ct: ClassTag[A]) = self.derived[A]

@@ -21,34 +21,46 @@
 
 package bitlapx.json
 
-import bitlapx.json.ast.*
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
-import scala.collection.immutable.ListMap
-
 /** @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/3/4
  */
-class JsonCodecSpec extends AnyFlatSpec with Matchers {
+trait JsonFieldDecoder[+A] {
+  self =>
 
-  "JsonCodec product" should "ok" in {
-    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) derives JsonCodec
+  final def map[B](f: A => B): JsonFieldDecoder[B] =
+    (in: String) => f(self.unsafeDecodeField(in))
 
-    val obj  = Test1(1, "s", true, List(1, 2, 3))
-    val json = JsonCodec[Test1].toJson(obj)
-    val back = JsonCodec[Test1].fromJson(json)
+  final def mapOrFail[B](f: A => Either[String, B]): JsonFieldDecoder[B] =
+    (in: String) =>
+      f(self.unsafeDecodeField(in)) match {
+        case Left(_)  => throw new Exception(s"Invalid json key: $in")
+        case Right(b) => b
+      }
 
-    json.prettyPrint shouldEqual "{\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}"
-    back shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
-  }
+  def unsafeDecodeField(in: String): A
+}
 
-  "JsonCodec string from num" should "fail" in {
-    JsonCodec[String].fromJson(Json.Num(2.0)) shouldEqual Left("Expected: String, got: Num(2.0)")
-  }
+object JsonFieldDecoder {
+  def apply[A](using a: JsonFieldDecoder[A]): JsonFieldDecoder[A] = a
 
-  "JsonCodec string" should "ok" in {
-    JsonCodec[String].fromJson(Json.Str("hello world")) shouldEqual Right("hello world")
-  }
+  given string: JsonFieldDecoder[String] = (in: String) => in
+
+  given int: JsonFieldDecoder[Int] =
+    JsonFieldDecoder[String].mapOrFail { str =>
+      try
+        Right(str.toInt)
+      catch {
+        case n: NumberFormatException => Left(s"Invalid Int: '$str': $n")
+      }
+    }
+
+  given long: JsonFieldDecoder[Long] =
+    JsonFieldDecoder[String].mapOrFail { str =>
+      try
+        Right(str.toLong)
+      catch {
+        case n: NumberFormatException => Left(s"Invalid Long: '$str': $n")
+      }
+    }
 }

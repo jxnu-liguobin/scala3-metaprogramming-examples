@@ -21,34 +21,26 @@
 
 package bitlapx.json
 
-import bitlapx.json.ast.*
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-
-import scala.collection.immutable.ListMap
-
 /** @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/3/4
  */
-class JsonCodecSpec extends AnyFlatSpec with Matchers {
+trait JsonFieldEncoder[-A] {
+  self =>
 
-  "JsonCodec product" should "ok" in {
-    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) derives JsonCodec
+  final def contramap[B](f: B => A): JsonFieldEncoder[B] = (in: B) => self.unsafeEncodeField(f(in))
 
-    val obj  = Test1(1, "s", true, List(1, 2, 3))
-    val json = JsonCodec[Test1].toJson(obj)
-    val back = JsonCodec[Test1].fromJson(json)
+  def unsafeEncodeField(in: A): String
+}
 
-    json.prettyPrint shouldEqual "{\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}"
-    back shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
-  }
+object JsonFieldEncoder {
+  def apply[A](implicit a: JsonFieldEncoder[A]): JsonFieldEncoder[A] = a
 
-  "JsonCodec string from num" should "fail" in {
-    JsonCodec[String].fromJson(Json.Num(2.0)) shouldEqual Left("Expected: String, got: Num(2.0)")
-  }
+  given string: JsonFieldEncoder[String] = (in: String) => in
 
-  "JsonCodec string" should "ok" in {
-    JsonCodec[String].fromJson(Json.Str("hello world")) shouldEqual Right("hello world")
-  }
+  given int: JsonFieldEncoder[Int] =
+    JsonFieldEncoder[String].contramap(_.toString)
+
+  given long: JsonFieldEncoder[Long] =
+    JsonFieldEncoder[String].contramap(_.toString)
 }

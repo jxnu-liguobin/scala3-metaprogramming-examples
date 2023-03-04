@@ -21,34 +21,36 @@
 
 package bitlapx.json
 
-import bitlapx.json.ast.*
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import bitlapx.json.ast.Json
 
+import scala.collection.immutable
 import scala.collection.immutable.ListMap
+import scala.util.Right
 
 /** @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/3/4
  */
-class JsonCodecSpec extends AnyFlatSpec with Matchers {
+private[json] trait EncoderLowPriority2 {
 
-  "JsonCodec product" should "ok" in {
-    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) derives JsonCodec
+  given iterable[A, T[X] <: Iterable[X]](using jsonEncoder: JsonEncoder[A]): JsonEncoder[T[A]] = (as: T[A]) =>
+    Json.Arr(
+      as.map(jsonEncoder.encode)
+        .foldLeft[List[Json]](List.empty) { (s, i) =>
+          s ::: List(i) 
+        }
+    )
 
-    val obj  = Test1(1, "s", true, List(1, 2, 3))
-    val json = JsonCodec[Test1].toJson(obj)
-    val back = JsonCodec[Test1].fromJson(json)
+  def keyValueIterable[K, A, T[X, Y] <: Iterable[(X, Y)]](using K: JsonFieldEncoder[K], A: JsonEncoder[A]) =
+    new JsonEncoder[T[K, A]]:
+      override def encode(kvs: T[K, A]): Json =
+        Json.Obj(
+          kvs
+            .foldLeft[ListMap[String, Json]](ListMap.empty) { case (s, (k, v)) =>
+              val key   = K.unsafeEncodeField(k)
+              val value = A.encode(v)
+              if value == Json.Null then s else  s ++ ListMap(key -> value)
+            }
+        )
 
-    json.prettyPrint shouldEqual "{\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}"
-    back shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
-  }
-
-  "JsonCodec string from num" should "fail" in {
-    JsonCodec[String].fromJson(Json.Num(2.0)) shouldEqual Left("Expected: String, got: Num(2.0)")
-  }
-
-  "JsonCodec string" should "ok" in {
-    JsonCodec[String].fromJson(Json.Str("hello world")) shouldEqual Right("hello world")
-  }
 }
