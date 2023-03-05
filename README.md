@@ -12,3 +12,30 @@
 ----
 
 Toy box for learning scala3 metaprogramming
+
+
+
+# bitlapx-json
+
+simple json ast to string.
+
+Usage 1
+```scala
+    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Test2])
+    final case class Test2(abc: String)
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(1, "s", true, Set(Test2("abc")))
+    val json = JsonCodec[Test1].toJson(obj1)
+    val back = JsonCodec[Test1].fromJson(json)
+```
+
+Usage 2
+```scala
+    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonCodec
+
+    val obj  = Test1(1, "s", true, Set(1, 2, 3))
+    val json = JsonCodec[Test1].toJson(obj)
+    val back = JsonCodec[Test1].fromJson(json)
+```

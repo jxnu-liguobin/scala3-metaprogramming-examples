@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  *  @version 1.0,2023/2/24
  */
 object DeriveJsonCodec:
-  inline def gen[A](using mirror: Mirror.Of[A], ct: ClassTag[A]) = {
+  inline def gen[A](using mirror: Mirror.Of[A]) = {
     val encoder = DeriveJsonEncoder.gen[A]
     val decoder = DeriveJsonDecoder.gen[A]
     JsonCodec(encoder, decoder)
@@ -113,4 +113,4 @@ object DeriveJsonDecoder extends AutoDerivation[JsonDecoder]:
         Right(ctx.rawConstruct(ArraySeq.unsafeWrapArray(ps)))
       case _ => Left("Not an object")
 
-  inline def gen[A](using mirror: Mirror.Of[A], ct: ClassTag[A]) = self.derived[A]
+  inline def gen[A](using mirror: Mirror.Of[A]) = self.derived[A]

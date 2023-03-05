@@ -50,26 +50,26 @@ object JsonCodec extends CodecLowPriority0:
   inline given derived[V](using m: Mirror.Of[V], e: JsonEncoder[V], d: JsonDecoder[V]): JsonCodec[V] =
     new JsonCodec[V](e, d)
 
-  given string: JsonCodec[String] = new JsonCodec[String](JsonEncoder.stringEncoder, JsonDecoder.stringDecoder)
-  given int: JsonCodec[Int]       = new JsonCodec[Int](JsonEncoder.intEncoder, JsonDecoder.intDecoder)
-  given short: JsonCodec[Short]   = new JsonCodec[Short](JsonEncoder.shortEncoder, JsonDecoder.shortDecoder)
-  given long: JsonCodec[Long]     = new JsonCodec[Long](JsonEncoder.longEncoder, JsonDecoder.longDecoder)
-  given float: JsonCodec[Float]   = new JsonCodec[Float](JsonEncoder.floatEncoder, JsonDecoder.floatDecoder)
-  given double: JsonCodec[Double] = new JsonCodec[Double](JsonEncoder.doubleEncoder, JsonDecoder.doubleDecoder)
-  given byte: JsonCodec[Byte]     = new JsonCodec[Byte](JsonEncoder.byteEncoder, JsonDecoder.byteDecoder)
-  given bigDecimal: JsonCodec[BigDecimal] =
-    new JsonCodec[BigDecimal](JsonEncoder.bigDecimalEncoder, JsonDecoder.bigDecimalDecoder)
+  given JsonCodec[String] = new JsonCodec[String](JsonEncoder[String], JsonDecoder[String])
+  given JsonCodec[Int]    = new JsonCodec[Int](JsonEncoder[Int], JsonDecoder[Int])
+  given JsonCodec[Short]  = new JsonCodec[Short](JsonEncoder[Short], JsonDecoder[Short])
+  given JsonCodec[Long]   = new JsonCodec[Long](JsonEncoder[Long], JsonDecoder[Long])
+  given JsonCodec[Float]  = new JsonCodec[Float](JsonEncoder[Float], JsonDecoder[Float])
+  given JsonCodec[Double] = new JsonCodec[Double](JsonEncoder[Double], JsonDecoder[Double])
+  given JsonCodec[Byte]   = new JsonCodec[Byte](JsonEncoder[Byte], JsonDecoder[Byte])
+  given JsonCodec[BigDecimal] =
+    new JsonCodec[BigDecimal](JsonEncoder[BigDecimal], JsonDecoder[BigDecimal])
 
   given javaBigDecimal: JsonCodec[java.math.BigDecimal] =
     new JsonCodec[java.math.BigDecimal](JsonEncoder.javaBigDecimalEncoder, JsonDecoder.javaBigDecimalDecoder)
 
-  given boolean: JsonCodec[Boolean] = new JsonCodec[Boolean](JsonEncoder.boolEncoder, JsonDecoder.boolDecoder)
-  given symbol: JsonCodec[Symbol]   = new JsonCodec[Symbol](JsonEncoder.symbolEncoder, JsonDecoder.symbolDecoder)
+  given JsonCodec[Boolean] = new JsonCodec[Boolean](JsonEncoder[Boolean], JsonDecoder[Boolean])
+  given JsonCodec[Symbol]  = new JsonCodec[Symbol](JsonEncoder[Symbol], JsonDecoder[Symbol])
 
-  given option[A: JsonEncoder: JsonDecoder]: JsonCodec[Option[A]] =
+  given [A: JsonEncoder: JsonDecoder]: JsonCodec[Option[A]] =
     JsonCodec(JsonEncoder.option(using JsonEncoder[A]), JsonDecoder.option(using JsonDecoder[A]))
 
-  given either[A: JsonEncoder: JsonDecoder, B: JsonEncoder: JsonDecoder]: JsonCodec[Either[A, B]] =
+  given [A: JsonEncoder: JsonDecoder, B: JsonEncoder: JsonDecoder]: JsonCodec[Either[A, B]] =
     JsonCodec(
       JsonEncoder.either(using JsonEncoder[A], JsonEncoder[B]),
       JsonDecoder.either(using JsonDecoder[A], JsonDecoder[B])

@@ -43,12 +43,16 @@ lazy val commonSettings =
     scalacOptions ++= Seq(
       /** "-Ycheck:all",** */
       "-language:dynamics",
-      "-explain"
+      "-explain",
+      "-release:8",
+      "unchecked",
+      "-deprecation",
+      "-feature",
+      "-Werror"
     ),
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % scalatestVersion % Test
-    ),
-    scalacOptions ++= Seq("unchecked", "-deprecation", "-feature", "-Werror")
+    )
   )
 
 lazy val bitlapx = project

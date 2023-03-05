@@ -46,27 +46,27 @@ object JsonEncoder extends EncoderLowPriority1:
 
   given javaBigDecimalEncoder: JsonEncoder[java.math.BigDecimal] = (v: java.math.BigDecimal) => Json.Num(v)
 
-  given symbolEncoder: JsonEncoder[Symbol] = (v: Symbol) => Json.Str(v.name)
+  given JsonEncoder[Symbol] = (v: Symbol) => Json.Str(v.name)
 
-  given boolEncoder: JsonEncoder[Boolean] = (v: Boolean) => Json.Bool(v)
+  given JsonEncoder[Boolean] = (v: Boolean) => Json.Bool(v)
 
-  given stringEncoder: JsonEncoder[String] = (v: String) => Json.Str(v)
+  given JsonEncoder[String] = (v: String) => Json.Str(v)
 
-  given shortEncoder: JsonEncoder[Short] = (v: Short) => Json.Num(v)
+  given JsonEncoder[Short] = (v: Short) => Json.Num(v)
 
-  given longEncoder: JsonEncoder[Long] = (v: Long) => Json.Num(v)
+  given JsonEncoder[Long] = (v: Long) => Json.Num(v)
 
-  given byteEncoder: JsonEncoder[Byte] = (v: Byte) => Json.Num(v)
+  given JsonEncoder[Byte] = (v: Byte) => Json.Num(v)
 
-  given intEncoder: JsonEncoder[Int] = (v: Int) => Json.Num(v)
+  given JsonEncoder[Int] = (v: Int) => Json.Num(v)
 
-  given bigDecimalEncoder: JsonEncoder[BigDecimal] = (v: BigDecimal) => Json.Num(v)
+  given JsonEncoder[BigDecimal] = (v: BigDecimal) => Json.Num(v)
 
-  given floatEncoder: JsonEncoder[Float] = (v: Float) => Json.Num(v)
+  given JsonEncoder[Float] = (v: Float) => Json.Num(v)
 
-  given doubleEncoder: JsonEncoder[Double] = (v: Double) => Json.Num(v)
+  given JsonEncoder[Double] = (v: Double) => Json.Num(v)
 
-  given arrEncoder[V](using js: JsonEncoder[V]): JsonEncoder[List[V]] = (list: List[V]) => Json.Arr(list map js.encode)
+  given [A](using js: JsonEncoder[A]): JsonEncoder[List[A]] = list[A]
 
   given option[A](using jsonEncoder: JsonEncoder[A]): JsonEncoder[Option[A]] = (a: Option[A]) =>
     a match
@@ -98,5 +98,4 @@ object JsonEncoder extends EncoderLowPriority1:
       val js    = summonInline[JsonEncoder[t]]
       val label = constValue[l].asInstanceOf[String]
       val value = js.encode(productElement[t](v, i))
-
-      toListMap[ts, ls, V](v, i + 1) + (label -> value)
+      ListMap(label -> value) ++ toListMap[ts, ls, V](v, i + 1)

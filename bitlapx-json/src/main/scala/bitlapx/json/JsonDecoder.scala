@@ -46,7 +46,7 @@ object JsonDecoder extends DecoderLowPriority1:
 
   def apply[A](using a: JsonDecoder[A]): JsonDecoder[A] = a
 
-  given bigDecimalDecoder: JsonDecoder[BigDecimal] = (json: Json) =>
+  given JsonDecoder[BigDecimal] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value)
       case n               => fail[BigDecimal](n)
@@ -56,63 +56,52 @@ object JsonDecoder extends DecoderLowPriority1:
       case Json.Num(value) => Right(value)
       case n               => fail[java.math.BigDecimal](n)
 
-  given symbolDecoder: JsonDecoder[Symbol] = (json: Json) =>
+  given JsonDecoder[Symbol] = (json: Json) =>
     json match
       case Json.Str(value) => Right(Symbol(value))
       case n               => fail[Symbol](n)
 
-  given stringDecoder: JsonDecoder[String] = (json: Json) =>
+  given JsonDecoder[String] = (json: Json) =>
     json match
       case Json.Str(value: String) => Right(value)
       case n                       => fail[String](n)
 
-  given boolDecoder: JsonDecoder[Boolean] = (json: Json) =>
+  given JsonDecoder[Boolean] = (json: Json) =>
     json match
       case Json.Bool(value) => Right(value)
       case n                => fail[Boolean](n)
 
-  given shortDecoder: JsonDecoder[Short] = (json: Json) =>
+  given JsonDecoder[Short] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.shortValue())
       case n               => fail[Short](n)
 
-  given longDecoder: JsonDecoder[Long] = (json: Json) =>
+  given JsonDecoder[Long] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.longValue())
       case n               => fail[Long](n)
 
-  given byteDecoder: JsonDecoder[Byte] = (json: Json) =>
+  given JsonDecoder[Byte] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.byteValue())
       case n               => fail[Byte](n)
 
-  given intDecoder: JsonDecoder[Int] = (json: Json) =>
+  given JsonDecoder[Int] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.intValue())
       case n               => fail[Int](n)
 
-  given floatDecoder: JsonDecoder[Float] = (json: Json) =>
+  given JsonDecoder[Float] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.floatValue())
       case n               => fail[Float](n)
 
-  given doubleDecoder: JsonDecoder[Double] = (json: Json) =>
+  given JsonDecoder[Double] = (json: Json) =>
     json match
       case Json.Num(value) => Right(value.doubleValue())
       case n               => fail[Double](n)
 
-  given arrDecoder[V](using js: JsonDecoder[V], ct: ClassTag[V]): JsonDecoder[List[V]] = (json: Json) =>
-    json match
-      case Json.Arr(list: List[Json]) =>
-        val init: Result[List[V]] = Right(List.empty)
-        list
-          .foldRight(init) { case (json, resultTs) =>
-            for
-              t  <- js.decode(json)
-              ts <- resultTs
-            yield t :: ts
-          }
-      case n => fail[List[V]](n)
+  given [A](using js: JsonDecoder[A]): JsonDecoder[List[A]] = builder[A, List](List.newBuilder[A])
 
   given option[A](using jsonDecoder: JsonDecoder[A]): JsonDecoder[Option[A]] = (json: Json) =>
     json match
@@ -130,7 +119,7 @@ object JsonDecoder extends DecoderLowPriority1:
           } else Left(s"Not an either: $json")
         case _ => Left(s"Not an either: $json")
 
-  inline given derived[V](using m: Mirror.Of[V], ct: ClassTag[V]): JsonDecoder[V] = (json: Json) =>
+  inline given derived[V: ClassTag](using m: Mirror.Of[V]): JsonDecoder[V] = (json: Json) =>
     json match
       case Json.Obj(map) =>
         inline m match {
@@ -141,8 +130,8 @@ object JsonDecoder extends DecoderLowPriority1:
         }
       case o => fail[V](o)
 
-  private inline def fail[V](js: => Json)(using ct: ClassTag[V]) = {
-    val name = ct.runtimeClass.getSimpleName
+  private inline def fail[V: ClassTag](js: => Json) = {
+    val name = classTag[V].runtimeClass.getSimpleName
     Left(s"Expected: $name, got: $js")
   }
 

@@ -38,6 +38,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     sealed trait Test0
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
     final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+
     given JsonCodec[Test0] = DeriveJsonCodec.gen[Test0]
 
     val obj1  = Test1(1, "s", true, List(1, 2, 3))
@@ -45,14 +46,14 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val back1 = JsonCodec[Test0].fromJson(json1)
 
     println(json1.asJsonString)
-    json1.asJsonString shouldEqual "{\"Test1\": {\"l\": [1, 2, 3], \"b\": true, \"s\": \"s\", \"d\": 1.0}}"
+    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
     back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
 
     val obj2  = Test2(1, "s", true, List(1, 2, 3))
     val json2 = JsonCodec[Test0].toJson(obj2)
     val back2 = JsonCodec[Test0].fromJson(json2)
 
-    json2.asJsonString shouldEqual "{\"Test2\": {\"l\": [1, 2, 3], \"b\": true, \"s\": \"s\", \"d\": 1.0}}"
+    json2.asJsonString shouldEqual "{\"Test2\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
     back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
   }
 
@@ -178,7 +179,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     back shouldEqual Right(Test1(1, "s", true, HashMap("1" -> Test2("abc"), "2" -> Test2("abc"))))
   }
 
-  "JsonCodec nested product by all collection" should "ok" in {
+  "JsonCodec nested products by all collections" should "ok" in {
     final case class Test1(
       d: Double,
       s: String,
