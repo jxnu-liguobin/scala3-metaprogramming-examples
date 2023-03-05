@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-private[json] trait DecoderLowPriority1 extends DecoderLowPriority2 {
+private[json] trait DecoderLowPriority1 extends DecoderLowPriority2:
 
   given array[A](using jsonDecoder: JsonDecoder[A], classTag: ClassTag[A]): JsonDecoder[Array[A]] =
     (json: Json) =>
@@ -80,5 +80,3 @@ private[json] trait DecoderLowPriority1 extends DecoderLowPriority2 {
 
   given sortedMap[K: JsonFieldDecoder: Ordering, V: JsonDecoder]: JsonDecoder[collection.SortedMap[K, V]] =
     keyValueBuilder[K, V, collection.SortedMap](collection.SortedMap.newBuilder[K, V])
-
-}

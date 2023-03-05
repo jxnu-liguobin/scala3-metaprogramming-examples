@@ -27,17 +27,17 @@ import scala.collection.immutable
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-trait CodecLowPriority0 extends CodecLowPriority2:
-  implicit def hashSet[A: JsonEncoder: JsonDecoder]: JsonCodec[immutable.HashSet[A]] =
+private[json] trait CodecLowPriority0 extends CodecLowPriority1:
+  given hashSet[A: JsonEncoder: JsonDecoder]: JsonCodec[immutable.HashSet[A]] =
     JsonCodec(JsonEncoder.hashSet[A], JsonDecoder.hashSet[A])
 
-  implicit def hashMap[K: JsonFieldEncoder: JsonFieldDecoder, V: JsonEncoder: JsonDecoder]
+  given hashMap[K: JsonFieldEncoder: JsonFieldDecoder, V: JsonEncoder: JsonDecoder]
     : JsonCodec[immutable.HashMap[K, V]] =
     JsonCodec(JsonEncoder.hashMap[K, V], JsonDecoder.hashMap[K, V])
 
 end CodecLowPriority0
 
-trait CodecLowPriority1 extends CodecLowPriority2:
+private[json] trait CodecLowPriority1 extends CodecLowPriority2:
 
   given seq[A: JsonEncoder: JsonDecoder]: JsonCodec[immutable.Seq[A]] =
     JsonCodec(JsonEncoder.seq[A], JsonDecoder.seq[A])
@@ -65,6 +65,6 @@ trait CodecLowPriority1 extends CodecLowPriority2:
 
 end CodecLowPriority1
 
-trait CodecLowPriority2:
-  implicit def iterable[A: JsonEncoder: JsonDecoder]: JsonCodec[Iterable[A]] =
+private[json] trait CodecLowPriority2:
+  given iterable[A: JsonEncoder: JsonDecoder]: JsonCodec[Iterable[A]] =
     JsonCodec(JsonEncoder.iterable[A, Iterable], JsonDecoder.builder(Iterable.newBuilder[A]))

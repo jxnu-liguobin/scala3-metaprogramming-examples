@@ -31,7 +31,7 @@ import scala.util.Right
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-private[json] trait EncoderLowPriority2 {
+private[json] trait EncoderLowPriority2:
 
   given iterable[A, T[X] <: Iterable[X]](using jsonEncoder: JsonEncoder[A]): JsonEncoder[T[A]] = (as: T[A]) =>
     Json.Arr(
@@ -52,5 +52,3 @@ private[json] trait EncoderLowPriority2 {
               if value == Json.Null then s else s ++ ListMap(key -> value)
             }
         )
-
-}

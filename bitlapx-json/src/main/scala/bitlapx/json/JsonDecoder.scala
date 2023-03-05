@@ -44,7 +44,7 @@ end JsonDecoder
 
 object JsonDecoder extends DecoderLowPriority1:
 
-  def apply[A](implicit a: JsonDecoder[A]): JsonDecoder[A] = a
+  def apply[A](using a: JsonDecoder[A]): JsonDecoder[A] = a
 
   given bigDecimalDecoder: JsonDecoder[BigDecimal] = (json: Json) =>
     json match

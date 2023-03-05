@@ -31,7 +31,7 @@ import scala.util.Right
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-private[json] trait EncoderLowPriority1 extends EncoderLowPriority2 {
+private[json] trait EncoderLowPriority1 extends EncoderLowPriority2:
 
   given array[A](using jsonEncoder: JsonEncoder[A]): JsonEncoder[Array[A]] = (as: Array[A]) =>
     Json.Arr(
@@ -73,4 +73,3 @@ private[json] trait EncoderLowPriority1 extends EncoderLowPriority2 {
 
   given sortedMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[collection.SortedMap[K, V]] =
     keyValueIterable[K, V, collection.SortedMap]
-}

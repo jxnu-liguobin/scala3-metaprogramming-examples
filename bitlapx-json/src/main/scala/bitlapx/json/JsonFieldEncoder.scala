@@ -25,16 +25,16 @@ package bitlapx.json
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-trait JsonFieldEncoder[-A] {
+trait JsonFieldEncoder[-A]:
   self =>
 
   final def contramap[B](f: B => A): JsonFieldEncoder[B] = (in: B) => self.unsafeEncodeField(f(in))
 
   def unsafeEncodeField(in: A): String
-}
+end JsonFieldEncoder
 
-object JsonFieldEncoder {
-  def apply[A](implicit a: JsonFieldEncoder[A]): JsonFieldEncoder[A] = a
+object JsonFieldEncoder:
+  def apply[A](using a: JsonFieldEncoder[A]): JsonFieldEncoder[A] = a
 
   given string: JsonFieldEncoder[String] = (in: String) => in
 
@@ -43,4 +43,3 @@ object JsonFieldEncoder {
 
   given long: JsonFieldEncoder[Long] =
     JsonFieldEncoder[String].contramap(_.toString)
-}

@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-private[json] trait DecoderLowPriority2 {
+private[json] trait DecoderLowPriority2:
 
   def builder[A, T[_]](builder: mutable.Builder[A, T[A]])(using jsonDecoder: JsonDecoder[A]): JsonDecoder[T[A]] =
     (json: Json) =>
@@ -57,5 +57,3 @@ private[json] trait DecoderLowPriority2 {
               }
             listMapE.map(lm => builder.addAll(lm).result())
           case _ => Left(s"Not a map: $json")
-
-}

@@ -42,7 +42,7 @@ end JsonEncoder
 
 object JsonEncoder extends EncoderLowPriority1:
 
-  def apply[A](implicit a: JsonEncoder[A]): JsonEncoder[A] = a
+  def apply[A](using a: JsonEncoder[A]): JsonEncoder[A] = a
 
   given javaBigDecimalEncoder: JsonEncoder[java.math.BigDecimal] = (v: java.math.BigDecimal) => Json.Num(v)
 

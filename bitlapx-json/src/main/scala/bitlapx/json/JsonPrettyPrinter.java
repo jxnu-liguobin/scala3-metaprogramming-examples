@@ -95,7 +95,7 @@ public class JsonPrettyPrinter {
                     
                 case ',':
                     if (!inString)
-                        result += "\n" + strrepeat(" ", (indent * tabWidth) - 1);
+                        result += "\n" + strrepeat(" ", (indent * tabWidth) - 1); // -1 indent 
                     break;
                     
                 case '"':

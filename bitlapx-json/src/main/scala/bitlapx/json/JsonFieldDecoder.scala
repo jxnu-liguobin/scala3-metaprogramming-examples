@@ -25,7 +25,7 @@ package bitlapx.json
  *    梦境迷离
  *  @version 1.0,2023/3/4
  */
-trait JsonFieldDecoder[+A] {
+trait JsonFieldDecoder[+A]:
   self =>
 
   final def map[B](f: A => B): JsonFieldDecoder[B] =
@@ -39,9 +39,9 @@ trait JsonFieldDecoder[+A] {
       }
 
   def unsafeDecodeField(in: String): A
-}
+end JsonFieldDecoder
 
-object JsonFieldDecoder {
+object JsonFieldDecoder:
   def apply[A](using a: JsonFieldDecoder[A]): JsonFieldDecoder[A] = a
 
   given string: JsonFieldDecoder[String] = (in: String) => in
@@ -63,4 +63,3 @@ object JsonFieldDecoder {
         case n: NumberFormatException => Left(s"Invalid Long: '$str': $n")
       }
     }
-}
