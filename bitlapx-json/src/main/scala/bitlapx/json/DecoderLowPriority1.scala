@@ -23,8 +23,8 @@ package bitlapx.json
 
 import bitlapx.json.ast.*
 
-import scala.collection.{Iterable, immutable, mutable}
-import scala.collection.immutable.*
+import scala.collection.mutable.ListBuffer
+import scala.collection.{ immutable, mutable }
 import scala.reflect.ClassTag
 
 /** @author
@@ -44,15 +44,18 @@ private[json] trait DecoderLowPriority1 extends DecoderLowPriority2 {
           }
         case _ => Left(s"Not an array: $json")
 
-  given seq[A: JsonDecoder]: JsonDecoder[immutable.Seq[A]] = builder[A, Seq](Seq.newBuilder[A])
+  given seq[A: JsonDecoder]: JsonDecoder[Seq[A]] = builder[A, Seq](immutable.Seq.newBuilder[A])
 
   given indexedSeq[A: JsonDecoder]: JsonDecoder[IndexedSeq[A]] = builder[A, IndexedSeq](IndexedSeq.newBuilder[A])
 
-  given linearSeq[A: JsonDecoder]: JsonDecoder[LinearSeq[A]] = builder[A, LinearSeq](LinearSeq.newBuilder[A])
+  given linearSeq[A: JsonDecoder]: JsonDecoder[immutable.LinearSeq[A]] =
+    builder[A, immutable.LinearSeq](immutable.LinearSeq.newBuilder[A])
 
-  given listSet[A: JsonDecoder]: JsonDecoder[immutable.ListSet[A]] = builder[A, immutable.ListSet](immutable.ListSet.newBuilder[A])
+  given listSet[A: JsonDecoder]: JsonDecoder[immutable.ListSet[A]] =
+    builder[A, immutable.ListSet](immutable.ListSet.newBuilder[A])
 
-  given treeSet[A: JsonDecoder:Ordering]: JsonDecoder[immutable.TreeSet[A]] = builder[A, immutable.TreeSet](immutable.TreeSet.newBuilder[A])
+  given treeSet[A: JsonDecoder: Ordering]: JsonDecoder[immutable.TreeSet[A]] =
+    builder[A, immutable.TreeSet](immutable.TreeSet.newBuilder[A])
 
   given list[A: JsonDecoder]: JsonDecoder[List[A]] = builder[A, List](List.newBuilder[A])
 
@@ -60,21 +63,22 @@ private[json] trait DecoderLowPriority1 extends DecoderLowPriority2 {
 
   given set[A: JsonDecoder]: JsonDecoder[Set[A]] = builder[A, Set](Set.newBuilder[A])
 
-  given hashSet[A: JsonDecoder]: JsonDecoder[immutable.HashSet[A]] = builder[A, immutable.HashSet](immutable.HashSet.newBuilder[A])
+  given hashSet[A: JsonDecoder]: JsonDecoder[immutable.HashSet[A]] =
+    builder[A, immutable.HashSet](immutable.HashSet.newBuilder[A])
 
-  given sortedSet[A: Ordering: JsonDecoder]: JsonDecoder[SortedSet[A]] =
-    builder[A, SortedSet](SortedSet.newBuilder[A])
+  given sortedSet[A: Ordering: JsonDecoder]: JsonDecoder[immutable.SortedSet[A]] =
+    builder[A, immutable.SortedSet](immutable.SortedSet.newBuilder[A])
 
   given hashMap[K: JsonFieldDecoder, V: JsonDecoder]: JsonDecoder[immutable.HashMap[K, V]] =
     keyValueBuilder[K, V, immutable.HashMap](immutable.HashMap.newBuilder[K, V])
 
-  given mutableHashMap[K: JsonFieldDecoder, V: JsonDecoder]: JsonDecoder[mutable.HashMap[K, V]] =
-    keyValueBuilder[K, V, mutable.HashMap](mutable.HashMap.newBuilder[K, V])
+  given mutableMap[K: JsonFieldDecoder, V: JsonDecoder]: JsonDecoder[mutable.Map[K, V]] =
+    keyValueBuilder[K, V, mutable.Map](mutable.Map.newBuilder[K, V])
 
   given map[K: JsonFieldDecoder, V: JsonDecoder]: JsonDecoder[Map[K, V]] =
     keyValueBuilder[K, V, Map](Map.newBuilder[K, V])
 
-  given sortedMap[K: JsonFieldDecoder: Ordering, V: JsonDecoder]: JsonDecoder[SortedMap[K, V]] =
-    keyValueBuilder[K, V, SortedMap](SortedMap.newBuilder[K, V])
+  given sortedMap[K: JsonFieldDecoder: Ordering, V: JsonDecoder]: JsonDecoder[collection.SortedMap[K, V]] =
+    keyValueBuilder[K, V, collection.SortedMap](collection.SortedMap.newBuilder[K, V])
 
 }

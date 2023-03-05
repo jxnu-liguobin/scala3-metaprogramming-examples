@@ -40,7 +40,7 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj)
     val back = JsonCodec[Test1].fromJson(json)
 
-    json.prettyPrint shouldEqual "{\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}"
+    json.asJsonString shouldEqual "{\"l\": [1, 2, 3], \"b\": true, \"s\": \"s\", \"d\": 1.0}"
     back shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
   }
 

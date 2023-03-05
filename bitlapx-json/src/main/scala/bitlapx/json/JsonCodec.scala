@@ -41,7 +41,7 @@ final class JsonCodec[V](e: JsonEncoder[V], d: JsonDecoder[V]):
   def fromJson(json: Json): Result[V] = d.decode(json)
 end JsonCodec
 
-object JsonCodec extends CodecLowPriority:
+object JsonCodec extends CodecLowPriority0:
 
   def apply[A](encoder: JsonEncoder[A], decoder: JsonDecoder[A]): JsonCodec[A] = new JsonCodec(encoder, decoder)
 

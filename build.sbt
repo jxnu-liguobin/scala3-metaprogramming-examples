@@ -48,7 +48,6 @@ lazy val commonSettings =
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % scalatestVersion % Test
     ),
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     scalacOptions ++= Seq("unchecked", "-deprecation", "-feature", "-Werror")
   )
 

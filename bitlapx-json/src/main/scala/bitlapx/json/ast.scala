@@ -35,15 +35,15 @@ object ast {
 
   sealed abstract class Json {
     self =>
-    def prettyPrint: String = this match
-      case Str(value)  => value
+    def asJsonString: String = this match
+      case Str(value)  => s"\"$value\""
       case Num(value)  => value.toString
       case Bool(value) => value.toString
-      case Arr(list)   => s"[${list.map(_.prettyPrint).mkString(", ")}]"
+      case Arr(list)   => s"[${list.map(_.asJsonString).mkString(", ")}]"
       case Obj(map)    => s"{${map.map(this.toObjectPair).mkString(", ")}}"
       case Json.Null   => "null"
 
-    private def toObjectPair(k: String, v: Json): String = s""""$k": ${v.prettyPrint}"""
+    private def toObjectPair(k: String, v: Json): String = s""""$k": ${v.asJsonString}"""
 
   }
 

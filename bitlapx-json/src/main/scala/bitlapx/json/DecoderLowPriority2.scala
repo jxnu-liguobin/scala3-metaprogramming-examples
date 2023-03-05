@@ -24,7 +24,7 @@ package bitlapx.json
 import bitlapx.json.ast.*
 
 import scala.Seq
-import scala.collection.{immutable, mutable}
+import scala.collection.{ immutable, mutable }
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 

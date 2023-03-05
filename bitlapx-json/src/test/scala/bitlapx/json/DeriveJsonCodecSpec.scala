@@ -23,8 +23,10 @@ package bitlapx.json
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scala.collection.immutable
+
+import scala.collection.{ immutable, mutable }
 import scala.collection.immutable.*
+import scala.math
 
 /** @author
  *    梦境迷离
@@ -42,14 +44,15 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json1 = JsonCodec[Test0].toJson(obj1)
     val back1 = JsonCodec[Test0].fromJson(json1)
 
-    json1.prettyPrint shouldEqual "{\"Test1\": {\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}}"
+    println(json1.asJsonString)
+    json1.asJsonString shouldEqual "{\"Test1\": {\"l\": [1, 2, 3], \"b\": true, \"s\": \"s\", \"d\": 1.0}}"
     back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
 
     val obj2  = Test2(1, "s", true, List(1, 2, 3))
     val json2 = JsonCodec[Test0].toJson(obj2)
     val back2 = JsonCodec[Test0].fromJson(json2)
 
-    json2.prettyPrint shouldEqual "{\"Test2\": {\"l\": [1, 2, 3], \"b\": true, \"s\": s, \"d\": 1.0}}"
+    json2.asJsonString shouldEqual "{\"Test2\": {\"l\": [1, 2, 3], \"b\": true, \"s\": \"s\", \"d\": 1.0}}"
     back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
   }
 
@@ -62,8 +65,8 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}]}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}]}"
     back shouldEqual Right(Test1(1, "s", true, List(Test2("abc"))))
   }
 
@@ -77,9 +80,9 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
+    println(json.asJsonString)
 
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}]}"
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}]}"
 
     // array not equals
     back.map(_.s) shouldEqual Right(Test1(1.0, "s", true, Array(Test2("abc")))).map(_.s)
@@ -95,8 +98,8 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}]}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}]}"
     back shouldEqual Right(Test1(1, "s", true, Seq(Test2("abc"))))
   }
 
@@ -110,8 +113,8 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}]}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}]}"
     back shouldEqual Right(Test1(1, "s", true, LinearSeq(Test2("abc"))))
   }
 
@@ -125,8 +128,8 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": {\"1\": {\"abc\": abc}}}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": {\"1\": {\"abc\": \"abc\"}}}"
     back shouldEqual Right(Test1(1, "s", true, HashMap("1" -> Test2("abc"))))
   }
 
@@ -140,11 +143,10 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}]}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}]}"
     back shouldEqual Right(Test1(1, "s", true, Set(Test2("abc"))))
   }
-
 
   "JsonCodec nested product by IndexedSeq with two elements" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: LinearSeq[Test2])
@@ -152,12 +154,12 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
-    val obj1 = Test1(1, "s", true, LinearSeq(Test2("abc"),Test2("dgf")))
+    val obj1 = Test1(1, "s", true, LinearSeq(Test2("abc"), Test2("dgf")))
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": [{\"abc\": abc}, {\"abc\": dgf}]}"
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"abc\": \"abc\"}, {\"abc\": \"dgf\"}]}"
     back shouldEqual Right(Test1(1.0, "s", true, List(Test2("abc"), Test2("dgf"))))
   }
 
@@ -167,13 +169,152 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
-    val obj1 = Test1(1, "s", true, HashMap("1" -> Test2("abc"),"2" -> Test2("abc")))
+    val obj1 = Test1(1, "s", true, HashMap("1" -> Test2("abc"), "2" -> Test2("abc")))
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 
-    println(json.prettyPrint)
-    json.prettyPrint shouldEqual "{\"d\": 1.0, \"s\": s, \"b\": true, \"l\": {\"1\": {\"abc\": abc}, \"2\": {\"abc\": abc}}}"
-    back shouldEqual Right(Test1(1, "s", true, HashMap("1" -> Test2("abc"),"2" -> Test2("abc"))))
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": {\"1\": {\"abc\": \"abc\"}, \"2\": {\"abc\": \"abc\"}}}"
+    back shouldEqual Right(Test1(1, "s", true, HashMap("1" -> Test2("abc"), "2" -> Test2("abc"))))
+  }
+
+  "JsonCodec nested product by all collection" should "ok" in {
+    final case class Test1(
+      d: Double,
+      s: String,
+      b: Boolean,
+      hashKey: HashMap[String, Test2],
+      vectorKey: Vector[Test2],
+      eitherKey: Either[String, Test2],
+      hashSetKey: HashSet[Test2],
+      mapKey: Map[String, Test2],
+      treeSetKey: TreeSet[Test2],
+      linearSeqKey: LinearSeq[Test2],
+      indexedSeqKey: IndexedSeq[Test2],
+      sortedSetKey: SortedSet[Test2],
+      listSetKey: ListSet[Test2],
+      mutableMapKey: mutable.Map[String, Test2]
+    )
+    final case class Test2(abc: String)
+    object Test2 {
+      given Ordering[Test2] = scala.Ordering.fromLessThan((a, b) => a.abc.last < b.abc.last)
+    }
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(
+      1,
+      "s",
+      true,
+      HashMap("1" -> Test2("abc"), "2" -> Test2("abc")),
+      Vector(Test2("vector value")),
+      Right(Test2("either value")).withLeft[String],
+      HashSet(Test2("hashset value 1"), Test2("hashset value 2")),
+      Map("1" -> Test2("map value 1"), "2" -> Test2("map value 2")),
+      TreeSet(Test2("tree map value1"), Test2("tree map value2")),
+      LinearSeq(Test2("liner seq value1"), Test2("liner seq value2")),
+      IndexedSeq(Test2("indexed seq value1"), Test2("indexed seq value2")),
+      SortedSet(Test2("sorted set value1"), Test2("sorted set value2")),
+      ListSet(Test2("list set value1"), Test2("list set value2")),
+      mutable.Map("1" -> Test2("mutable map value1"), "2" -> Test2("mutable map value2"))
+    )
+
+    val json = JsonCodec[Test1].toJson(obj1)
+    val back = JsonCodec[Test1].fromJson(json)
+
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"hashKey\": {\"1\": {\"abc\": \"abc\"}, \"2\": {\"abc\": \"abc\"}}, \"vectorKey\": [{\"abc\": \"vector value\"}], \"eitherKey\": {\"Right\": {\"abc\": \"either value\"}}, \"hashSetKey\": [{\"abc\": \"hashset value 1\"}, {\"abc\": \"hashset value 2\"}], \"mapKey\": {\"1\": {\"abc\": \"map value 1\"}, \"2\": {\"abc\": \"map value 2\"}}, \"treeSetKey\": [{\"abc\": \"tree map value1\"}, {\"abc\": \"tree map value2\"}], \"linearSeqKey\": [{\"abc\": \"liner seq value1\"}, {\"abc\": \"liner seq value2\"}], \"indexedSeqKey\": [{\"abc\": \"indexed seq value1\"}, {\"abc\": \"indexed seq value2\"}], \"sortedSetKey\": [{\"abc\": \"sorted set value1\"}, {\"abc\": \"sorted set value2\"}], \"listSetKey\": [{\"abc\": \"list set value1\"}, {\"abc\": \"list set value2\"}], \"mutableMapKey\": {\"1\": {\"abc\": \"mutable map value1\"}, \"2\": {\"abc\": \"mutable map value2\"}}}"
+
+    println(JsonPrettyPrinter.prettyPrintJson(json.asJsonString))
+    JsonPrettyPrinter.prettyPrintJson(json.asJsonString) shouldEqual
+      """{
+        |    "d":  1.0,
+        |    "s":  "s",
+        |    "b":  true,
+        |    "hashKey":  {
+        |        "1":  {
+        |            "abc":  "abc"
+        |        },
+        |        "2":  {
+        |            "abc":  "abc"
+        |        }
+        |    },
+        |    "vectorKey":  [
+        |        {
+        |            "abc":  "vector value"
+        |        }
+        |    ],
+        |    "eitherKey":  {
+        |        "Right":  {
+        |            "abc":  "either value"
+        |        }
+        |    },
+        |    "hashSetKey":  [
+        |        {
+        |            "abc":  "hashset value 1"
+        |        },
+        |        {
+        |            "abc":  "hashset value 2"
+        |        }
+        |    ],
+        |    "mapKey":  {
+        |        "1":  {
+        |            "abc":  "map value 1"
+        |        },
+        |        "2":  {
+        |            "abc":  "map value 2"
+        |        }
+        |    },
+        |    "treeSetKey":  [
+        |        {
+        |            "abc":  "tree map value1"
+        |        },
+        |        {
+        |            "abc":  "tree map value2"
+        |        }
+        |    ],
+        |    "linearSeqKey":  [
+        |        {
+        |            "abc":  "liner seq value1"
+        |        },
+        |        {
+        |            "abc":  "liner seq value2"
+        |        }
+        |    ],
+        |    "indexedSeqKey":  [
+        |        {
+        |            "abc":  "indexed seq value1"
+        |        },
+        |        {
+        |            "abc":  "indexed seq value2"
+        |        }
+        |    ],
+        |    "sortedSetKey":  [
+        |        {
+        |            "abc":  "sorted set value1"
+        |        },
+        |        {
+        |            "abc":  "sorted set value2"
+        |        }
+        |    ],
+        |    "listSetKey":  [
+        |        {
+        |            "abc":  "list set value1"
+        |        },
+        |        {
+        |            "abc":  "list set value2"
+        |        }
+        |    ],
+        |    "mutableMapKey":  {
+        |        "1":  {
+        |            "abc":  "mutable map value1"
+        |        },
+        |        "2":  {
+        |            "abc":  "mutable map value2"
+        |        }
+        |    }
+        |}""".stripMargin
+    back shouldEqual Right(obj1)
   }
 
 }

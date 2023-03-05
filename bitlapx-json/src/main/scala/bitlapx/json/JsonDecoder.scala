@@ -122,12 +122,12 @@ object JsonDecoder extends DecoderLowPriority1:
   given either[A, B](using jsonDecoderA: JsonDecoder[A], jsonDecoderB: JsonDecoder[B]): JsonDecoder[Either[A, B]] =
     (json: Json) =>
       json match
-        case Json.Arr(list) if list.size < 2 => throw new Exception("missing fields")
-        case Json.Arr(list) =>
-          for {
-            a <- jsonDecoderA.decode(list(0))
-            b <- jsonDecoderB.decode(list(1))
-          } yield if (a != null) Left(a) else Right(b)
+        case Json.Obj(list) =>
+          if (list.contains("Left")) {
+            jsonDecoderA.decode(list("Left")).map(Left(_))
+          } else if (list.contains("Right")) {
+            jsonDecoderB.decode(list("Right")).map(Right(_))
+          } else Left(s"Not an either: $json")
         case _ => Left(s"Not an either: $json")
 
   inline given derived[V](using m: Mirror.Of[V], ct: ClassTag[V]): JsonDecoder[V] = (json: Json) =>

@@ -24,8 +24,7 @@ package bitlapx.json
 import bitlapx.json.ast.Json
 
 import scala.collection.immutable.ListMap
-import scala.collection.{immutable, mutable}
-import scala.collection.immutable.*
+import scala.collection.{ immutable, mutable }
 import scala.util.Right
 
 /** @author
@@ -46,7 +45,7 @@ private[json] trait EncoderLowPriority1 extends EncoderLowPriority2 {
 
   given indexedSeq[A: JsonEncoder]: JsonEncoder[IndexedSeq[A]] = iterable[A, IndexedSeq]
 
-  given linearSeq[A: JsonEncoder]: JsonEncoder[LinearSeq[A]] = iterable[A, LinearSeq]
+  given linearSeq[A: JsonEncoder]: JsonEncoder[immutable.LinearSeq[A]] = iterable[A, immutable.LinearSeq]
 
   given listSet[A: JsonEncoder]: JsonEncoder[immutable.ListSet[A]] = iterable[A, immutable.ListSet]
 
@@ -60,18 +59,18 @@ private[json] trait EncoderLowPriority1 extends EncoderLowPriority2 {
 
   given hashSet[A: JsonEncoder]: JsonEncoder[immutable.HashSet[A]] = iterable[A, immutable.HashSet]
 
-  given sortedSet[A: Ordering: JsonEncoder]: JsonEncoder[SortedSet[A]] =
-    iterable[A, SortedSet]
+  given sortedSet[A: Ordering: JsonEncoder]: JsonEncoder[immutable.SortedSet[A]] =
+    iterable[A, immutable.SortedSet]
 
   given hashMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[immutable.HashMap[K, V]] =
     keyValueIterable[K, V, immutable.HashMap]
 
-  given mutableMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[Map[K, V]] =
+  given map[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[Map[K, V]] =
     keyValueIterable[K, V, Map]
 
-  given mutableHashMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[mutable.HashMap[K, V]] =
-    keyValueIterable[K, V, mutable.HashMap]
+  given mutableMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[mutable.Map[K, V]] =
+    keyValueIterable[K, V, mutable.Map]
 
-  given sortedMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[SortedMap[K, V]] =
-    keyValueIterable[K, V, SortedMap]
+  given sortedMap[K: JsonFieldEncoder, V: JsonEncoder]: JsonEncoder[collection.SortedMap[K, V]] =
+    keyValueIterable[K, V, collection.SortedMap]
 }

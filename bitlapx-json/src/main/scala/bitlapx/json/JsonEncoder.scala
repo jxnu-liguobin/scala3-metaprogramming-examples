@@ -76,8 +76,18 @@ object JsonEncoder extends EncoderLowPriority1:
   given either[A, B](using jsonEncoderA: JsonEncoder[A], jsonEncoderB: JsonEncoder[B]): JsonEncoder[Either[A, B]] =
     (a: Either[A, B]) =>
       a match
-        case Left(a)  => jsonEncoderA.encode(a)
-        case Right(b) => jsonEncoderB.encode(b)
+        case Left(a) =>
+          Json.Obj(
+            ListMap(
+              "Left" -> jsonEncoderA.encode(a)
+            )
+          )
+        case Right(b) =>
+          Json.Obj(
+            ListMap(
+              "Right" -> jsonEncoderB.encode(b)
+            )
+          )
 
   inline given derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) =>
     Json.Obj(toListMap[m.MirroredElemTypes, m.MirroredElemLabels, V](v, 0))

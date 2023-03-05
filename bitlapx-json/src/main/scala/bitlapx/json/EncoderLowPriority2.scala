@@ -37,7 +37,7 @@ private[json] trait EncoderLowPriority2 {
     Json.Arr(
       as.map(jsonEncoder.encode)
         .foldLeft[List[Json]](List.empty) { (s, i) =>
-          s ::: List(i) 
+          s ::: List(i)
         }
     )
 
@@ -49,7 +49,7 @@ private[json] trait EncoderLowPriority2 {
             .foldLeft[ListMap[String, Json]](ListMap.empty) { case (s, (k, v)) =>
               val key   = K.unsafeEncodeField(k)
               val value = A.encode(v)
-              if value == Json.Null then s else  s ++ ListMap(key -> value)
+              if value == Json.Null then s else s ++ ListMap(key -> value)
             }
         )
 
