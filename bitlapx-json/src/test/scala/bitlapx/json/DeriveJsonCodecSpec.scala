@@ -21,6 +21,8 @@
 
 package bitlapx.json
 
+import bitlapx.json.annotation.{ jsonExclude, jsonField }
+import bitlapx.json.ast.Json
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -318,4 +320,48 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     back shouldEqual Right(obj1)
   }
 
+  "JsonCodec jsonExclude" should "ok" in {
+    final case class Test1(d: Double, s: String, b: Boolean, @jsonExclude l: List[Test2])
+    final case class Test2(abc: String)
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(1, "s", true, List(Test2("abc")))
+    val json = JsonCodec[Test1].toJson(obj1)
+
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true}"
+    json shouldEqual Json.Obj(
+      ListMap(
+        "d" -> Json.Num(1.0),
+        "s" -> Json.Str("s"),
+        "b" -> Json.Bool(true)
+      )
+    )
+  }
+
+  "JsonCodec jsonField" should "ok" in {
+    final case class Test1(d: Double, s: String, b: Boolean, @jsonField("test2-list") l: List[Test2])
+    final case class Test2(abc: String)
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(1, "s", true, List(Test2("abc")))
+    val json = JsonCodec[Test1].toJson(obj1)
+
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"test2-list\": [{\"abc\": \"abc\"}]}"
+
+    val back = JsonCodec[Test1].fromJson(json)
+
+    back shouldEqual Right(Test1(1, "s", true, List(Test2("abc"))))
+    json shouldEqual Json.Obj(
+      ListMap(
+        "d"          -> Json.Num(1.0),
+        "s"          -> Json.Str("s"),
+        "b"          -> Json.Bool(true),
+        "test2-list" -> Json.Arr(List(Json.Obj(ListMap("abc" -> Json.Str("abc")))))
+      )
+    )
+  }
 }

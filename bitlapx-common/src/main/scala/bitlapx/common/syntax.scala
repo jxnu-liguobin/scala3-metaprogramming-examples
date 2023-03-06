@@ -21,6 +21,8 @@
 
 package bitlapx.common
 
+import bitlapx.common
+import bitlapx.common.CollectAnnotations.paramAnns
 import bitlapx.common.unapply.UnTypeConstructor
 
 import scala.deriving.Mirror
@@ -108,3 +110,5 @@ extension (using Quotes)(self: quotes.reflect.Term.type)
   def companionOf(tpe: quotes.reflect.TypeRepr): quotes.reflect.Term =
     import quotes.reflect.*
     Ident(tpe.typeSymbol.companionModule.termRef)
+
+inline def paramAnns[T](using Quotes): List[(String, List[Any])] = ${ common.CollectAnnotations.paramAnns[T] }

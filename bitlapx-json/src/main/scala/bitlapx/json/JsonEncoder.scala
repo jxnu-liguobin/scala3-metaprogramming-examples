@@ -22,13 +22,12 @@
 package bitlapx.json
 
 import ast.*
-import bitlapx.json
 import bitlapx.common.SimpleTools.*
-
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.deriving.Mirror
+import scala.quoted.*
 
 /** @author
  *    梦境迷离

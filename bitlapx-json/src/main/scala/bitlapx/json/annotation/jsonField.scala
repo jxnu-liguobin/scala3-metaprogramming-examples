@@ -19,37 +19,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package bitlapx.json
+package bitlapx.json.annotation
 
-import bitlapx.json.annotation.{ jsonExclude, jsonField }
-import bitlapx.json.ast.*
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import scala.annotation.Annotation
 
-import scala.collection.{ immutable, mutable }
-import scala.collection.immutable.*
-
-/** @author
+/** If used on a case class field, determines the name of the JSON field. Defaults to the case class field name.
+ *
+ *  @author
  *    梦境迷离
- *  @version 1.0,2023/2/21
+ *  @version 1.0,2023/3/5
  */
-class JsonCodecSpec extends AnyFlatSpec with Matchers {
-
-  "JsonCodec derives product" should "ok" in {
-    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonCodec
-
-    val obj  = Test1(1, "s", true, Set(1, 2, 3))
-    val json = JsonEncoder[Test1].encode(obj)
-    val back = JsonDecoder[Test1].decode(json)
-    json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}"
-    back shouldEqual Right(Test1(1.0, "s", true, Set(1, 2, 3)))
-  }
-
-  "JsonCodec string from num" should "fail" in {
-    JsonCodec[String].fromJson(Json.Num(2.0)) shouldEqual Left("Expected: String, got: Num(2.0)")
-  }
-
-  "JsonCodec string" should "ok" in {
-    JsonCodec[String].fromJson(Json.Str("hello world")) shouldEqual Right("hello world")
-  }
-}
+final case class jsonField(name: String) extends Annotation

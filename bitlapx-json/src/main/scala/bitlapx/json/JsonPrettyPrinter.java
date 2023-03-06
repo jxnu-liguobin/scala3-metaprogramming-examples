@@ -31,7 +31,7 @@ public class JsonPrettyPrinter {
     /**
      * Amount of spaces inserted at each indentation level.
      */
-    final public static int tabWidth = 4;
+    final private static int tabWidth = 4;
 
     /**
      * Repeats a `String` a number of `times`.

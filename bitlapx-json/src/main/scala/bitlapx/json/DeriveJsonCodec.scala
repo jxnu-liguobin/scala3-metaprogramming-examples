@@ -21,6 +21,7 @@
 
 package bitlapx.json
 
+import bitlapx.json.annotation.{ jsonExclude, jsonField }
 import bitlapx.json.ast.*
 import magnolia1.*
 
@@ -48,10 +49,19 @@ object DeriveJsonEncoder extends AutoDerivation[JsonEncoder]:
       Json.Obj(ListMap.empty)
     } else
       (a: A) =>
+        // exclude in json ast
+        val params = ctx.params.filterNot { param =>
+          param.annotations.collectFirst { case _: jsonExclude =>
+            ()
+          }.isDefined
+        }
+
         Json.Obj(
-          ctx.params
+          params
             .foldLeft[ListMap[String, Json]](ListMap.empty) { case (chunk, param) =>
-              val name  = param.label
+              val name = param.annotations.collectFirst { case jsonField(name) =>
+                name
+              }.getOrElse(param.label)
               val value = param.typeclass.encode(param.deref(a))
               if (value == Json.Null) chunk
               else chunk ++ ListMap(name -> value)
@@ -91,7 +101,12 @@ object DeriveJsonDecoder extends AutoDerivation[JsonDecoder]:
 
   override def join[T](ctx: CaseClass[Typeclass, T]): Typeclass[T] = (json: Json) =>
     val names: Array[String] =
-      IArray.genericWrapArray(ctx.params.map(_.label)).toArray
+      IArray
+        .genericWrapArray(ctx.params.map { p =>
+          p.annotations.collectFirst { case jsonField(name) => name }
+            .getOrElse(p.label)
+        })
+        .toArray
     val len                             = names.length
     lazy val namesMap: Map[String, Int] = names.zipWithIndex.toMap
     val tcs: Array[JsonDecoder[Any]] =
