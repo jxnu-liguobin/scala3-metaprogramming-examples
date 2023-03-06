@@ -32,7 +32,6 @@ simple json tool.
 - [x] Support `@jsonExclude` annotation
 - [x] Support sum types
 
-Usage 2
 ```scala
     final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonCodec
 
