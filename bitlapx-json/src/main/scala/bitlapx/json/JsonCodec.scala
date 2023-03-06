@@ -28,6 +28,7 @@ import scala.collection.immutable.*
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
+import scala.quoted.Type
 import scala.reflect.ClassTag
 import scala.runtime.Tuples
 import scala.util.*
@@ -45,10 +46,10 @@ object JsonCodec extends CodecLowPriority0:
 
   def apply[A](encoder: JsonEncoder[A], decoder: JsonDecoder[A]): JsonCodec[A] = new JsonCodec(encoder, decoder)
 
-  inline def apply[V](using js: JsonCodec[V]): JsonCodec[V] = js
+  inline def apply[A](using js: JsonCodec[A]): JsonCodec[A] = js
 
-  inline given derived[V](using m: Mirror.Of[V], e: JsonEncoder[V], d: JsonDecoder[V]): JsonCodec[V] =
-    new JsonCodec[V](e, d)
+  inline given derived[A](using m: Mirror.Of[A], e: JsonEncoder[A], d: JsonDecoder[A]): JsonCodec[A] =
+    new JsonCodec[A](e, d)
 
   given JsonCodec[String] = new JsonCodec[String](JsonEncoder[String], JsonDecoder[String])
   given JsonCodec[Int]    = new JsonCodec[Int](JsonEncoder[Int], JsonDecoder[Int])

@@ -19,19 +19,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package bitlapx.common
+package bitlapx.common.annotation
+
+import magnolia1.Macro.CollectAnnotations
 
 import scala.compiletime.*
 import scala.deriving.*
-import scala.deriving.Mirror
 import scala.quoted.*
 
-object CollectAnnotations:
-  def paramAnns[T: Type](using Quotes): Expr[List[(String, List[Any])]] =
-    new CollectAnnotations[T].paramAnns
-
-end CollectAnnotations
-
+/** @author
+ *    梦境迷离
+ *  @version 1.0,2023/3/1
+ */
 final class CollectAnnotations[T: Type](using val quotes: Quotes):
 
   import quotes.reflect.*
@@ -112,6 +111,7 @@ final class CollectAnnotations[T: Type](using val quotes: Quotes):
           field.name -> field.annotations
             .filter(filterAnnotation)
             .map(_.asExpr.asInstanceOf[Expr[Any]])
+        case _ => field.name -> List.empty  
     }
 
   private def groupByParamName(anns: List[(String, List[Expr[Any]])]) =

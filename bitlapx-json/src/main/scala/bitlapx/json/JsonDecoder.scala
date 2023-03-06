@@ -22,7 +22,9 @@
 package bitlapx.json
 
 import ast.*
+import bitlapx.common.TypeInfo
 import bitlapx.json
+import bitlapx.json.annotation.jsonField
 
 import scala.deriving.Mirror
 import scala.reflect.*
@@ -124,9 +126,10 @@ object JsonDecoder extends DecoderLowPriority1:
       case Json.Obj(map) =>
         inline m match {
           case s: Mirror.SumOf[V] =>
-            Left(s"Not support type: ${classTag[V].runtimeClass.getSimpleName}")
+            throw new Exception(s"Not support sum type")
           case p: Mirror.ProductOf[V] =>
-            fromListMap[m.MirroredElemTypes, m.MirroredElemLabels](map, 0).map(t => p.fromProduct(t.asInstanceOf))
+            val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
+            fromListMap[m.MirroredElemTypes, m.MirroredElemLabels](map, 0)(pans).map(t => p.fromProduct(t.asInstanceOf))
         }
       case o => fail[V](o)
 
@@ -135,15 +138,15 @@ object JsonDecoder extends DecoderLowPriority1:
     Left(s"Expected: $name, got: $js")
   }
 
-  private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int): Result[Tuple] =
+  private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int)(pans: Map[String, List[Any]] ): Result[Tuple] =
     inline erasedValue[(T, L)] match
       case _: (EmptyTuple, EmptyTuple) => Right(Tuple())
       case _: (t *: ts, l *: ls) =>
         val js    = summonInline[JsonDecoder[t]]
         val label = constValue[l].asInstanceOf[String]
-
+        val name:String = pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name}.getOrElse(label) )
         for {
-          j <- map.get(label).toRight(s"No such element: $label")
+          j <- map.get(name).toRight(s"No such element: $name")
           h <- js.decode(j)
-          t <- fromListMap[ts, ls](map, i + 1)
+          t <- fromListMap[ts, ls](map, i + 1)(pans)
         } yield h *: t

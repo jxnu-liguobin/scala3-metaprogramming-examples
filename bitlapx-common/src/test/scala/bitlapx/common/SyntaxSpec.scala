@@ -21,8 +21,8 @@
 
 package bitlapx.common
 
-import SimpleTools.*
-import magnolia1.TypeInfo
+import MacroTools.*
+import magnolia1.TypeInfo as MTypeInfo
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -49,9 +49,9 @@ class SyntaxSpec extends AnyFlatSpec with Matchers {
     s3 shouldEqual "Test3(x=5,t2=Test2(token=***,tx=200L))"
   }
 
-  "TypeNameInfo" should "ok" in {
-    val s1 = summon[TypeNameInfo[Test1]]
-    s1.name shouldEqual TypeInfo("bitlapx.common", "Test1", List())
+  "TypeInfo" should "ok" in {
+    val s1 = summon[TypeInfo[Test1]]
+    s1.name shouldEqual MTypeInfo("bitlapx.common", "Test1", List())
     s1.subtypeNames shouldEqual List()
   }
 

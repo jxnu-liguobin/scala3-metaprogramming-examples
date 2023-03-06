@@ -22,12 +22,17 @@
 package bitlapx.json
 
 import ast.*
-import bitlapx.common.SimpleTools.*
+import bitlapx.common.MacroTools.*
+import bitlapx.common.TypeInfo
+import bitlapx.common.TypeInfo.typeInfo
+import bitlapx.json.annotation.*
+
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.deriving.Mirror
 import scala.quoted.*
+import scala.reflect.{ classTag, ClassTag }
 
 /** @author
  *    梦境迷离
@@ -88,13 +93,27 @@ object JsonEncoder extends EncoderLowPriority1:
             )
           )
 
-  inline given derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) =>
-    Json.Obj(toListMap[m.MirroredElemTypes, m.MirroredElemLabels, V](v, 0))
+  inline given derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) => {
+    val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
+    inline m match {
+      case sum: Mirror.SumOf[V] =>
+        throw new Exception(s"Not support sum type")
+      case _: Mirror.ProductOf[V] =>
+        Json.Obj(
+          toListMap[m.MirroredElemTypes, m.MirroredElemLabels, V](v, 0)(pans)
+        )
+    }
+  }
 
-  private inline def toListMap[T, L, V](v: V, i: Int): ListMap[String, Json] = inline erasedValue[(T, L)] match
-    case _: (EmptyTuple, EmptyTuple) => ListMap.empty
-    case _: (t *: ts, l *: ls) =>
-      val js    = summonInline[JsonEncoder[t]]
-      val label = constValue[l].asInstanceOf[String]
-      val value = js.encode(productElement[t](v, i))
-      ListMap(label -> value) ++ toListMap[ts, ls, V](v, i + 1)
+  private inline def toListMap[T, L, V](v: V, i: Int)(pans: Map[String, List[Any]]): ListMap[String, Json] =
+    inline erasedValue[(T, L)] match
+      case _: (EmptyTuple, EmptyTuple) => ListMap.empty
+      case _: (t *: ts, l *: ls) =>
+        val js      = summonInline[JsonEncoder[t]]
+        val label   = constValue[l].asInstanceOf[String]
+        val value   = js.encode(productElement[t](v, i))
+        val exclude = pans.get(label).fold(false)(as => as.collectFirst { case _: jsonExclude => () }.isDefined)
+        val name: String =
+          pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name }.getOrElse(label))
+        if exclude then toListMap[ts, ls, V](v, i + 1)(pans)
+        else ListMap(name -> value) ++ toListMap[ts, ls, V](v, i + 1)(pans)

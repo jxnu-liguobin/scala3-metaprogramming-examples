@@ -35,8 +35,8 @@ import scala.reflect.{ classTag, ClassTag }
  *    梦境迷离
  *  @version 1.0,2023/3/1
  */
-object SimpleTools {
-  extension [T](t: T) def typeNameInfo = summon[TypeNameInfo[T]]
+object MacroTools {
+  extension [T](t: T) def typeInfo = summon[TypeInfo[T]]
 
   extension [T, Out](using Encoder[T, Out])(t: T) def encode = summon[Encoder[T, Out]].encode(t)
 
