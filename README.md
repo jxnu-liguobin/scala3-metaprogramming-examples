@@ -19,7 +19,7 @@ Toy box for learning scala3 metaprogramming
 simple json tool.
 
 ```scala
-"org.bitlap" %% "bitlapx-json" % version
+"org.bitlap" %% "bitlapx-json" % <version>
 ```
 
 ## Usage 1: derives JsonCodec
