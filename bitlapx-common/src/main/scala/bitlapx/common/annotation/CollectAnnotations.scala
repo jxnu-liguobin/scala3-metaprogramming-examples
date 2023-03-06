@@ -111,7 +111,7 @@ final class CollectAnnotations[T: Type](using val quotes: Quotes):
           field.name -> field.annotations
             .filter(filterAnnotation)
             .map(_.asExpr.asInstanceOf[Expr[Any]])
-        case _ => field.name -> List.empty  
+        case _ => field.name -> List.empty
     }
 
   private def groupByParamName(anns: List[(String, List[Expr[Any]])]) =

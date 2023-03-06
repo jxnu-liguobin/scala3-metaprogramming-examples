@@ -138,13 +138,16 @@ object JsonDecoder extends DecoderLowPriority1:
     Left(s"Expected: $name, got: $js")
   }
 
-  private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int)(pans: Map[String, List[Any]] ): Result[Tuple] =
+  private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int)(
+    pans: Map[String, List[Any]]
+  ): Result[Tuple] =
     inline erasedValue[(T, L)] match
       case _: (EmptyTuple, EmptyTuple) => Right(Tuple())
       case _: (t *: ts, l *: ls) =>
         val js    = summonInline[JsonDecoder[t]]
         val label = constValue[l].asInstanceOf[String]
-        val name:String = pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name}.getOrElse(label) )
+        val name: String =
+          pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name }.getOrElse(label))
         for {
           j <- map.get(name).toRight(s"No such element: $name")
           h <- js.decode(j)

@@ -23,13 +23,13 @@ package bitlapx.common
 
 import bitlapx.common.annotation.CollectAnnotations
 import magnolia1.Macro.typeInfo
-import magnolia1.{TypeInfo as MTypeInfo, *}
+import magnolia1.{ TypeInfo as MTypeInfo, * }
 
 import scala.annotation.tailrec
 import scala.compiletime.erasedValue
 import scala.deriving.Mirror
 import scala.quoted.*
-import scala.reflect.{ClassTag, classTag}
+import scala.reflect.{ classTag, ClassTag }
 
 /** @author
  *    梦境迷离
@@ -101,20 +101,19 @@ object TypeInfo extends Derivation[TypeInfo]:
         typeInfo[s] :: subTypes[T, tail](m, idx + 1)
   end subTypes
 
-  
-  def choose[T](subtypes:List[MTypeInfo],v:T): Int =
+  def choose[T](subtypes: List[MTypeInfo], v: T): Int =
     @tailrec def rec(ix: Int): Int =
-    if ix < subtypes.length then
-      val sub = subtypes(ix)
-      val isLocalClass = v.getClass.isLocalClass && !v.getClass.isInterface
-      val name = v.getClass.getSimpleName
-      val className = if(isLocalClass) name.subSequence(0, name.indexOf("$")) else name 
-      if sub.short == className then ix
-      else rec(ix + 1)
-    else
-      throw new IllegalArgumentException(
-        s"Invalid sub type of `${v.getClass.getSimpleName.stripSuffix("$")}`"
-      )
+      if ix < subtypes.length then
+        val sub          = subtypes(ix)
+        val isLocalClass = v.getClass.isLocalClass && !v.getClass.isInterface
+        val name         = v.getClass.getSimpleName
+        val className    = if (isLocalClass) name.subSequence(0, name.indexOf("$")) else name
+        if sub.short == className then ix
+        else rec(ix + 1)
+      else
+        throw new IllegalArgumentException(
+          s"Invalid sub type of `${v.getClass.getSimpleName.stripSuffix("$")}`"
+        )
     rec(0)
 
   override def join[T](ctx: CaseClass[TypeInfo, T]): TypeInfo[T] =
