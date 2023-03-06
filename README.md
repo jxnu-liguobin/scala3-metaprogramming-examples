@@ -23,10 +23,10 @@ simple json tool.
 ```
 
 ## Usage 1: derives JsonCodec
-- [x] scala types to json asts
-- [x] json asts to scala types
-- [x] json asts to string
-- [x] json asts to pretty string
+- [x] Scala types to Json asts
+- [x] Json asts to Scala types
+- [x] Json asts to string
+- [x] Json asts to pretty string
 - [x] Support product types
 - [x] Support `@jsonField` annotation
 - [x] Support `@jsonExclude` annotation
@@ -42,10 +42,10 @@ Usage 2
 ```
 
 ## Usage 2: DeriveJsonCodec.gen
-- [x] scala types to json asts
-- [x] json asts to scala types
-- [x] json asts to string
-- [x] json asts to pretty string
+- [x] Scala types to Json asts
+- [x] Json asts to Scala types
+- [x] Json asts to string
+- [x] Json asts to pretty string
 - [x] Support product types
 - [x] Support `@jsonField` annotation
 - [x] Support `@jsonExclude` annotation
