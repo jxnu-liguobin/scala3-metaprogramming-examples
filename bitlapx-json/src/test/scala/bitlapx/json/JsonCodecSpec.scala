@@ -81,28 +81,69 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-//  "JsonCodec derives sum type" should "ok" in {
-//    sealed trait Test0 derives  JsonEncoder
-//    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
-//    final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
-//
-//
-//    val obj1 = Test1(1, "s", true, List(1, 2, 3))
-//    val json1 = JsonEncoder[Test0].encode(obj1)
-//    val back1 = JsonDecoder[Test0].decode(json1)
-//
-//
-//    println(json1.asJsonString)
-//    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
-//    back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
-//
-//    val obj2 = Test2(1, "s", true, List(1, 2, 3))
-//    val json2 = JsonCodec[Test0].toJson(obj2)
-//    val back2 = JsonCodec[Test0].fromJson(json2)
-//
-//    json2.asJsonString shouldEqual "{\"Test2\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
-//    back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
-//  }
+  "JsonCodec derives sum type with independent codec " should "ok" in {
+    sealed trait Test0 derives JsonEncoder, JsonDecoder
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+    final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+
+    val obj1  = Test1(1, "s", true, List(1, 2, 3))
+    val json1 = JsonEncoder[Test0].encode(obj1)
+    val back1 = JsonDecoder[Test0].decode(json1)
+
+    println(json1.asJsonString)
+    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
+
+    val obj2  = Test2(1, "s", true, List(1, 2, 3))
+    val json2 = JsonCodec[Test0].toJson(obj2)
+    val back2 = JsonCodec[Test0].fromJson(json2)
+
+    json2.asJsonString shouldEqual "{\"Test2\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
+  }
+
+  "JsonCodec derives sum type with codec" should "ok" in {
+    sealed trait Test0 derives JsonCodec
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+    final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+
+    val obj1  = Test1(1, "s", true, List(1, 2, 3))
+    val json1 = JsonEncoder[Test0].encode(obj1)
+    val back1 = JsonDecoder[Test0].decode(json1)
+
+    println(json1.asJsonString)
+    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
+
+    val obj2  = Test2(1, "s", true, List(1, 2, 3))
+    val json2 = JsonCodec[Test0].toJson(obj2)
+    val back2 = JsonCodec[Test0].fromJson(json2)
+
+    json2.asJsonString shouldEqual "{\"Test2\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
+  }
+
+  "JsonCodec auto derive sum type" should "ok" in {
+    sealed trait Test0
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+    final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
+
+    val obj1  = Test1(1, "s", true, List(1, 2, 3))
+    val json1 = JsonEncoder[Test0].encode(obj1)
+    val back1 = JsonDecoder[Test0].decode(json1)
+
+    println(json1.asJsonString)
+    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
+
+    val obj2 = Test2(1, "s", true, List(1, 2, 3))
+    println(JsonCodec[Test0].asString(obj2))
+    val json2 = JsonCodec[Test0].toJson(obj2)
+    val back2 = JsonCodec[Test0].fromJson(json2)
+
+    json2.asJsonString shouldEqual "{\"Test2\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    back2 shouldEqual Right(Test2(1.0, "s", true, List(1, 2, 3)))
+  }
 
   "JsonCodec string from num" should "fail" in {
     JsonCodec[String].fromJson(Json.Num(2.0)) shouldEqual Left("Expected: String, got: Num(2.0)")

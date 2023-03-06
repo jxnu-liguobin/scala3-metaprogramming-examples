@@ -18,6 +18,10 @@ Toy box for learning scala3 metaprogramming
 
 simple json tool.
 
+```scala
+"org.bitlap" %% "bitlapx-json" % version
+```
+
 ## Usage 1: derives JsonCodec
 - [x] scala types to json asts
 - [x] json asts to scala types
@@ -26,7 +30,7 @@ simple json tool.
 - [x] Support product types
 - [x] Support `@jsonField` annotation
 - [x] Support `@jsonExclude` annotation
-- [ ] Support sum types
+- [x] Support sum types
 
 Usage 2
 ```scala

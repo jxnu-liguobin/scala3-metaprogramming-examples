@@ -24,22 +24,19 @@ package bitlapx.json
 import bitlapx.json.ast.*
 
 import scala.collection.immutable
-import scala.collection.immutable.*
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
-import scala.quoted.Type
-import scala.reflect.ClassTag
-import scala.runtime.Tuples
-import scala.util.*
 
 /** @author
  *    梦境迷离
  *  @version 1.0,2023/2/23
  */
-final class JsonCodec[V](e: JsonEncoder[V], d: JsonDecoder[V]):
-  def toJson(v: V): Json              = e.encode(v)
-  def fromJson(json: Json): Result[V] = d.decode(json)
+final class JsonCodec[A](e: JsonEncoder[A], d: JsonDecoder[A]):
+  def toJson(v: A): Json              = e.encode(v)
+  def fromJson(json: Json): Result[A] = d.decode(json)
+  def asString(a: A): String          = toJson(a).asJsonString
+  def asPrettyString(a: A): String    = JsonPrettyPrinter.prettyPrintJson(toJson(a).asJsonString)
 end JsonCodec
 
 object JsonCodec extends CodecLowPriority0:

@@ -22,17 +22,14 @@
 package bitlapx.json
 
 import ast.*
-import bitlapx.common.MacroTools.*
-import bitlapx.common.TypeInfo
-import bitlapx.common.TypeInfo.typeInfo
 import bitlapx.json.annotation.*
+import magnolia1.*
 
 import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.deriving.Mirror
 import scala.quoted.*
-import scala.reflect.{ classTag, ClassTag }
 
 /** @author
  *    梦境迷离
@@ -42,9 +39,50 @@ trait JsonEncoder[A]:
 
   def encode(a: A): Json
 
+  def asString(a: A): String = encode(a).asJsonString
+
+  def asPrettyString(a: A): String = JsonPrettyPrinter.prettyPrintJson(encode(a).asJsonString)
+
 end JsonEncoder
 
-object JsonEncoder extends EncoderLowPriority1:
+object JsonEncoder extends EncoderLowPriority1 with AutoDerivation[JsonEncoder]:
+  self =>
+
+  override def join[A](ctx: CaseClass[Typeclass, A]): Typeclass[A] =
+    if (ctx.params.isEmpty) { (_: A) =>
+      Json.Obj(ListMap.empty)
+    } else
+      (a: A) =>
+        // exclude in json ast
+        val params = ctx.params.filterNot { param =>
+          param.annotations.collectFirst { case _: jsonExclude =>
+            ()
+          }.isDefined
+        }
+
+        Json.Obj(
+          params
+            .foldLeft[ListMap[String, Json]](ListMap.empty) { case (chunk, param) =>
+              val name = param.annotations.collectFirst { case jsonField(name) =>
+                name
+              }.getOrElse(param.label)
+              val value = param.typeclass.encode(param.deref(a))
+              if (value == Json.Null) chunk
+              else chunk ++ ListMap(name -> value)
+            }
+        )
+
+  override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = (a: T) =>
+    ctx.choose(a) { sub =>
+      val value = sub.typeclass.encode(sub.cast(a))
+      Json.Obj(
+        ListMap(
+          sub.typeInfo.short -> value
+        )
+      )
+    }
+
+  inline def gen[A](using mirror: Mirror.Of[A]) = self.derived[A]
 
   def apply[A](using a: JsonEncoder[A]): JsonEncoder[A] = a
 
@@ -92,28 +130,3 @@ object JsonEncoder extends EncoderLowPriority1:
               "Right" -> jsonEncoderB.encode(b)
             )
           )
-
-  inline given derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) => {
-    val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
-    inline m match {
-      case sum: Mirror.SumOf[V] =>
-        throw new Exception(s"Not support sum type")
-      case _: Mirror.ProductOf[V] =>
-        Json.Obj(
-          toListMap[m.MirroredElemTypes, m.MirroredElemLabels, V](v, 0)(pans)
-        )
-    }
-  }
-
-  private inline def toListMap[T, L, V](v: V, i: Int)(pans: Map[String, List[Any]]): ListMap[String, Json] =
-    inline erasedValue[(T, L)] match
-      case _: (EmptyTuple, EmptyTuple) => ListMap.empty
-      case _: (t *: ts, l *: ls) =>
-        val js      = summonInline[JsonEncoder[t]]
-        val label   = constValue[l].asInstanceOf[String]
-        val value   = js.encode(productElement[t](v, i))
-        val exclude = pans.get(label).fold(false)(as => as.collectFirst { case _: jsonExclude => () }.isDefined)
-        val name: String =
-          pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name }.getOrElse(label))
-        if exclude then toListMap[ts, ls, V](v, i + 1)(pans)
-        else ListMap(name -> value) ++ toListMap[ts, ls, V](v, i + 1)(pans)

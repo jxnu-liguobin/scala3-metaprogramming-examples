@@ -22,13 +22,14 @@
 package bitlapx.json
 
 import ast.*
-import bitlapx.common.TypeInfo
 import bitlapx.json
-import bitlapx.json.annotation.jsonField
+import bitlapx.json.annotation.*
+import magnolia1.*
 
+import scala.collection.immutable.ArraySeq
+import scala.collection.mutable
 import scala.deriving.Mirror
 import scala.reflect.*
-import scala.collection.immutable.ListMap
 import scala.compiletime.*
 import scala.deriving.*
 import scala.quoted.*
@@ -44,7 +45,55 @@ trait JsonDecoder[A]:
 
 end JsonDecoder
 
-object JsonDecoder extends DecoderLowPriority1:
+object JsonDecoder extends DecoderLowPriority1 with AutoDerivation[JsonDecoder]:
+  self =>
+
+  override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = (json: Json) =>
+    val names: Array[String] = IArray.genericWrapArray(ctx.subtypes.map(p => p.typeInfo.short)).toArray
+    lazy val tcs: Array[JsonDecoder[Any]] =
+      IArray.genericWrapArray(ctx.subtypes.map(_.typeclass)).toArray.asInstanceOf[Array[JsonDecoder[Any]]]
+    lazy val namesMap: Map[String, Int] =
+      names.zipWithIndex.toMap
+    json match
+      case Json.Obj(chunk) if chunk.size == 1 =>
+        val (key, inner) = chunk.head
+        namesMap.get(key) match {
+          case Some(idx) => tcs(idx).decode(inner).map(_.asInstanceOf[T])
+          case None      => Left("Invalid disambiguator")
+        }
+      case Json.Obj(_) => Left("Not an object with a single field")
+      case _           => Left("Not an object")
+
+  override def join[T](ctx: CaseClass[Typeclass, T]): Typeclass[T] = (json: Json) =>
+    val names: Array[String] =
+      IArray
+        .genericWrapArray(ctx.params.map { p =>
+          p.annotations.collectFirst { case jsonField(name) => name }
+            .getOrElse(p.label)
+        })
+        .toArray
+    val len                             = names.length
+    lazy val namesMap: Map[String, Int] = names.zipWithIndex.toMap
+    val tcs: Array[JsonDecoder[Any]] =
+      IArray.genericWrapArray(ctx.params.map(_.typeclass)).toArray.asInstanceOf[Array[JsonDecoder[Any]]]
+    val failures = new mutable.LinkedHashSet[String]
+    json match
+      case Json.Obj(fields) =>
+        val ps: Array[Any] = Array.ofDim(len)
+        for ((key, value) <- fields)
+          namesMap.get(key) match {
+            case Some(field) =>
+              ps(field) = tcs(field).decode(value) match {
+                case Left(error)  => failures += error; null
+                case Right(value) => value
+              }
+            case None => Left("Invalid extra field")
+          }
+
+        Right(ctx.rawConstruct(ArraySeq.unsafeWrapArray(ps)))
+      case _ => Left("Not an object")
+
+  inline def gen[A](using mirror: Mirror.Of[A]) = self.derived[A]
 
   def apply[A](using a: JsonDecoder[A]): JsonDecoder[A] = a
 
@@ -121,35 +170,7 @@ object JsonDecoder extends DecoderLowPriority1:
           } else Left(s"Not an either: $json")
         case _ => Left(s"Not an either: $json")
 
-  inline given derived[V: ClassTag](using m: Mirror.Of[V]): JsonDecoder[V] = (json: Json) =>
-    json match
-      case Json.Obj(map) =>
-        inline m match {
-          case s: Mirror.SumOf[V] =>
-            throw new Exception(s"Not support sum type")
-          case p: Mirror.ProductOf[V] =>
-            val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
-            fromListMap[m.MirroredElemTypes, m.MirroredElemLabels](map, 0)(pans).map(t => p.fromProduct(t.asInstanceOf))
-        }
-      case o => fail[V](o)
-
   private inline def fail[V: ClassTag](js: => Json) = {
     val name = classTag[V].runtimeClass.getSimpleName
     Left(s"Expected: $name, got: $js")
   }
-
-  private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int)(
-    pans: Map[String, List[Any]]
-  ): Result[Tuple] =
-    inline erasedValue[(T, L)] match
-      case _: (EmptyTuple, EmptyTuple) => Right(Tuple())
-      case _: (t *: ts, l *: ls) =>
-        val js    = summonInline[JsonDecoder[t]]
-        val label = constValue[l].asInstanceOf[String]
-        val name: String =
-          pans.get(label).fold(label)(as => as.collectFirst { case jsonField(name) => name }.getOrElse(label))
-        for {
-          j <- map.get(name).toRight(s"No such element: $name")
-          h <- js.decode(j)
-          t <- fromListMap[ts, ls](map, i + 1)(pans)
-        } yield h *: t
