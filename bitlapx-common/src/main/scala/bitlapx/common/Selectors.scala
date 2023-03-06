@@ -24,6 +24,7 @@ package bitlapx.common
 import bitlapx.common.Failure.Suggestion
 import bitlapx.common.field.Fields
 import bitlapx.common.function.FunctionArgument
+import bitlapx.common.unapply.*
 
 import scala.quoted.*
 
@@ -57,31 +58,3 @@ object Selectors:
       case other =>
         Failure.abort(Failure.InvalidArgSelector.NotAnArgSelector(selector, Suggestion.fromFields(validArgs)))
     }
-
-  private object FieldSelector:
-    def unapply(arg: Expr[Any])(using Quotes): Option[String] =
-      import quotes.reflect.*
-      PartialFunction.condOpt(arg.asTerm) { case Lambda(_, Select(Ident(_), fieldName)) =>
-        fieldName
-      }
-  end FieldSelector
-
-  private object ArgSelector:
-    def unapply(using Quotes)(arg: quotes.reflect.Term): Option[String] =
-      import quotes.reflect.*
-      PartialFunction.condOpt(arg) { case Lambda(_, FunctionArgumentSelector(argumentName)) =>
-        argumentName
-      }
-  end ArgSelector
-
-  private object FunctionArgumentSelector:
-    def unapply(using Quotes)(arg: quotes.reflect.Term): Option[String] =
-      PartialFunction.condOpt(arg.asExpr) {
-        case '{
-              type argSelector <: FunctionArgument
-              ($args: `argSelector`).selectDynamic($selectedArg).$asInstanceOf$[tpe]
-            } =>
-          selectedArg.valueOrAbort
-
-      }
-  end FunctionArgumentSelector
