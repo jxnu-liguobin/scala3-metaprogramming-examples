@@ -25,7 +25,7 @@ import bitlapx.json.ast.*
 import bitlapx.common.MacroTools.*
 import bitlapx.common.TypeInfo
 import bitlapx.common.TypeInfo.typeInfo
-import bitlapx.json.{ EncoderLowPriority1, JsonDecoder, JsonEncoder }
+import bitlapx.json.{ DecoderLowPriority1, EncoderLowPriority1, JsonDecoder, JsonEncoder }
 import bitlapx.json.annotation.*
 
 import scala.collection.immutable.ListMap
@@ -40,7 +40,7 @@ import scala.reflect.*
  *  @version 1.0,2023/2/24
  */
 
-object JsonEncoder:
+object JsonEncoder extends EncoderLowPriority1:
 
   inline def derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) => {
     val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
