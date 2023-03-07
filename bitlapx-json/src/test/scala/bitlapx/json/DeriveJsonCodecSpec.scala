@@ -338,6 +338,15 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
         "b" -> Json.Bool(true)
       )
     )
+    Json
+      .Obj(
+        ListMap(
+          "d" -> Json.Num(1.0),
+          "s" -> Json.Str("s"),
+          "b" -> Json.Bool(true)
+        )
+      )
+      .selectDynamic("d") shouldEqual Json.Num(1.0)
   }
 
   "JsonCodec jsonField" should "ok" in {

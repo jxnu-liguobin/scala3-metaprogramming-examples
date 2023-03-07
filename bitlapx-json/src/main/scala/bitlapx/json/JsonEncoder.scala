@@ -22,6 +22,7 @@
 package bitlapx.json
 
 import ast.*
+import bitlapx.common.MacroTools.productElement
 import bitlapx.json.annotation.*
 import magnolia1.*
 

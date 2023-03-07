@@ -22,7 +22,7 @@ simple json tool.
 "org.bitlap" %% "bitlapx-json" % <version>
 ```
 
-## Usage 1: derives JsonCodec
+## Usage 1: derives JsonCodec magnolia1
 - [x] Scala types to Json asts
 - [x] Json asts to Scala types
 - [x] Json asts to string
@@ -40,7 +40,7 @@ simple json tool.
     val back = JsonCodec[Test1].fromJson(json)
 ```
 
-## Usage 2: DeriveJsonCodec.gen
+## Usage 2: DeriveJsonCodec.gen magnolia1
 - [x] Scala types to Json asts
 - [x] Json asts to Scala types
 - [x] Json asts to string
@@ -60,3 +60,13 @@ simple json tool.
     val json = JsonCodec[Test1].toJson(obj1)
     val back = JsonCodec[Test1].fromJson(json)
 ```
+
+## Pure Scala3
+- [x] Scala types to Json asts
+- [x] Json asts to Scala types
+- [x] Json asts to string
+- [x] Json asts to pretty string
+- [x] Support product types
+- [x] Support `@jsonField` annotation
+- [x] Support `@jsonExclude` annotation
+- [x] Support sum types

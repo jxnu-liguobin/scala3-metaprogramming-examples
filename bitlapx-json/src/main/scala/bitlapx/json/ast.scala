@@ -47,6 +47,12 @@ object ast {
 
   }
 
+  sealed trait JsonSelect extends Selectable {
+    self: Obj =>
+    def selectDynamic(name: String): Any =
+      self.map.getOrElse(name, Json.Null)
+  }
+
   object Json {
     final case class Str(value: String) extends Json
 
@@ -72,7 +78,7 @@ object ast {
 
     final case class Arr(list: List[Json]) extends Json
 
-    final case class Obj(map: ListMap[String, Json]) extends Json
+    final case class Obj(map: ListMap[String, Json]) extends Json with JsonSelect
 
     case object Null extends Json
   }

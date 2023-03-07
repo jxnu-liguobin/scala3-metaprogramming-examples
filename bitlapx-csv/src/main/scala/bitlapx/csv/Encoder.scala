@@ -21,6 +21,8 @@
 
 package bitlapx.csv
 
+import bitlapx.csv.ast.NotSupportTypeException
+import bitlapx.csv.ast.ParseError.*
 import magnolia1.*
 
 /** @author
@@ -42,7 +44,7 @@ object Encoder extends AutoDerivation[Encoder] {
 
   def split[T](ctx: SealedTrait[Encoder, T]): Encoder[T] = value =>
     ctx.choose(value) { sub =>
-      sub.typeclass.encode(sub.cast(value))
+      throw NotSupportTypeException(value = value.toString, targetType = sub.typeInfo.short)
     }
 
   given Encoder[String] = s => List(s)

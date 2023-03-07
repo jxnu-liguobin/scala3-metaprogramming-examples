@@ -23,7 +23,7 @@ package bitlapx.csv
 
 import magnolia1.*
 
-import scala.compiletime.{ constValue, erasedValue }
+import scala.compiletime.*
 import scala.deriving.Mirror
 import bitlapx.common.MacroTools.*
 import bitlapx.csv.ast.*
@@ -37,6 +37,8 @@ trait Decoder[T]:
 end Decoder
 
 object Decoder extends AutoDerivation[Decoder] {
+
+  val delimiter: Char = ','
 
   def apply[T: Decoder] = summon[Decoder[T]]
 
@@ -86,10 +88,11 @@ object Decoder extends AutoDerivation[Decoder] {
       .fold(fail(ParseError.NoValue()))(identity)
     parseResult.map(x => ParseSuccess(x.remainder, ctx.rawConstruct(x.value)))
 
-  def split[T](ctx: SealedTrait[Decoder, T]): Decoder[T] = value => ???
+  def split[T](ctx: SealedTrait[Decoder, T]): Decoder[T] = value =>
+    throw NotSupportTypeException(value = value.toString, targetType = "")
 
   given optionCodec[T: Decoder]: Decoder[Option[T]] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then success(None, tail)
@@ -103,7 +106,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[String] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -111,7 +114,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Int] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -120,7 +123,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Short] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -129,7 +132,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Float] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -138,7 +141,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Double] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -147,7 +150,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Char] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -157,7 +160,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Byte] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())
@@ -166,7 +169,7 @@ object Decoder extends AutoDerivation[Decoder] {
     }
 
   given Decoder[Boolean] = s =>
-    s.split(",").toList match {
+    s.split(delimiter).toList match {
       case Nil => fail(ParseError.NoValue())
       case head :: tail =>
         if head.trim == "" then fail(ParseError.NoValue())

@@ -31,6 +31,10 @@ object ast {
     case NoValue(label: String = "")                                         extends ParseError(label)
   end ParseError
 
+  sealed trait ParserException extends Throwable
+
+  final case class NotSupportTypeException(value: String, targetType: String) extends ParserException
+
   final case class ParseSuccess[+A](remainder: List[String], value: A)
 
   type ParseResult[T] = Either[ParseError, ParseSuccess[T]]

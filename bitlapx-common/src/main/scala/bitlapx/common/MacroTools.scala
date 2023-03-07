@@ -124,4 +124,12 @@ object MacroTools {
       case _ => false
     }
   }
+
+  inline def recurse[A <: Tuple, F[_]]: List[(String, F[Any])] =
+    inline erasedValue[A] match {
+      case _: (t *: ts) =>
+        val name = TypeInfo.typeInfo[t].short
+        name -> summonInline[F[t]].asInstanceOf[F[Any]] :: recurse[ts, F]
+      case EmptyTuple => Nil
+    }
 }
