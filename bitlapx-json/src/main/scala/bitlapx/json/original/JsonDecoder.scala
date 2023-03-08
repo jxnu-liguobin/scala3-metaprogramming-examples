@@ -41,7 +41,6 @@ import scala.util.Right
  *    梦境迷离
  *  @version 1.0,2023/2/24
  */
-
 object JsonDecoder extends DecoderLowPriority1:
 
   inline def derived[V](using m: Mirror.Of[V]): JsonDecoder[V] = (json: Json) =>
@@ -49,17 +48,20 @@ object JsonDecoder extends DecoderLowPriority1:
       case Json.Obj(map) =>
         inline m match {
           case s: Mirror.SumOf[V] =>
-            if (map.keys.size > 1) throw new Exception(s"Invalid json obj: $json, cannot be a sum type")
+            if (map.keys.size > 1) Left(s"""Invalid json obj: ${json.asJsonString}, cannot be a sum type""")
             else
               val subTypes = recurse[s.MirroredElemTypes, JsonDecoder].toMap
               val subType  = map.keys.toList.intersect(subTypes.keys.toList)
               if (subType.isEmpty)
-                throw new Exception(s"Invalid json obj: $json, cannot be a sum type")
+                Left(
+                  s"""Invalid json obj: ${json.asJsonString}, cannot be a sum type, available subTypes: ${subTypes.keys
+                      .mkString(",")}"""
+                )
               else
                 subType.headOption
                   .map(st => subTypes(st).decode(map(st)))
                   .getOrElse(
-                    throw new Exception(s"Invalid json obj: $json, cannot be a sum type")
+                    Left(s"""unknown error""")
                   )
                   .asInstanceOf[Result[V]]
 
@@ -67,7 +69,7 @@ object JsonDecoder extends DecoderLowPriority1:
             val pans: Map[String, List[Any]] = TypeInfo.paramAnns[V].to(Map)
             fromListMap[m.MirroredElemTypes, m.MirroredElemLabels](map, 0)(pans).map(t => p.fromProduct(t.asInstanceOf))
         }
-      case o => Left(s"Invalid json obj: $o")
+      case o => Left(s"""Invalid json obj: ${o.asJsonString}""")
 
   private inline def fromListMap[T, L](map: ListMap[String, Json], i: Int)(
     pans: Map[String, List[Any]]

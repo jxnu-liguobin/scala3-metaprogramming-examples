@@ -21,12 +21,10 @@
 
 package bitlapx.json
 
-import bitlapx.json.annotation.{ jsonExclude, jsonField }
+import bitlapx.json.annotation.*
 import bitlapx.json.ast.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import bitlapx.json.original.*
-import bitlapx.json.{ JsonDecoder as _, JsonEncoder as _ }
 
 import scala.collection.immutable.*
 import scala.collection.{ immutable, mutable }
@@ -37,35 +35,35 @@ import scala.collection.{ immutable, mutable }
  */
 class OriginalJsonCodecSpec extends AnyFlatSpec with Matchers {
 
-  "JsonCodec derives product" should "ok" in {
+  "JsonCodec originalGen product" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int])
-    val obj  = Test1(1, "s", true, Set(1, 2, 3))
-    val json = JsonEncoder.derived[Test1].encode(obj)
-    val back = JsonDecoder.derived[Test1].decode(json)
+    val obj                = Test1(1, "s", true, Set(1, 2, 3))
+    given JsonCodec[Test1] = DeriveJsonCodec.originalGen[Test1]
+
+    val json = JsonCodec[Test1].toJson(obj)
+    val back = JsonCodec[Test1].fromJson(json)
     json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}"
     back shouldEqual Right(Test1(1.0, "s", true, Set(1, 2, 3)))
   }
 
-  "JsonCodec auto derive sum type" should "ok" in {
+  "JsonCodec originalGen sum type" should "ok" in {
     sealed trait Test0
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
-    val encoder = JsonEncoder.derived[Test0]
-
-    val decoder = JsonDecoder.derived[Test0]
+    given JsonCodec[Test0] = DeriveJsonCodec.originalGen[Test0]
 
     val obj1  = Test1(1, "s", true, List(1, 2, 3))
-    val json1 = encoder.encode(obj1)
-    val back1 = decoder.decode(json1)
+    val json1 = JsonCodec[Test0].toJson(obj1)
+    val back1 = JsonCodec[Test0].fromJson(json1)
 
     println(json1.asJsonString)
     json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
     back1 shouldEqual Right(Test1(1.0, "s", true, List(1, 2, 3)))
   }
 
-  "JsonCodec derives product with jsonExclude" should "ok" in {
+  "JsonCodec originalGen product with jsonExclude" should "ok" in {
     final case class Test1(d: Double, s: String, @jsonExclude b: Boolean)
     val obj1 = Test1(1, "s", true)
-    val json = JsonEncoder.derived[Test1].encode(obj1)
+    val json = original.JsonEncoder.derived[Test1].encode(obj1)
 
     println(json.asJsonString)
     json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\"}"
@@ -77,15 +75,16 @@ class OriginalJsonCodecSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  "JsonCodec derives product with jsonField" should "ok" in {
+  "JsonCodec originalGen product with jsonField" should "ok" in {
     final case class Test1(d: Double, s: String, @jsonField("testb") b: Boolean)
-    val obj1 = Test1(1, "s", true)
-    val json = JsonEncoder.derived[Test1].encode(obj1)
+    val obj1               = Test1(1, "s", true)
+    given JsonCodec[Test1] = DeriveJsonCodec.originalGen[Test1]
 
+    val json = JsonCodec[Test1].toJson(obj1)
     println(json.asJsonString)
     json.asJsonString shouldEqual "{\"d\": 1.0, \"s\": \"s\", \"testb\": true}"
 
-    val back = JsonDecoder.derived[Test1].decode(json)
+    val back = JsonCodec[Test1].fromJson(json)
     back shouldEqual Right(Test1(1, "s", true))
     json shouldEqual Json.Obj(
       ListMap(
@@ -96,4 +95,33 @@ class OriginalJsonCodecSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  "JsonCodec originalGen sum type" should "error" in {
+    sealed trait Test0
+    final case class Test1(d: Double, s: String, b: Boolean) extends Test0
+
+    given JsonCodec[Test0] = DeriveJsonCodec.originalGen[Test0]
+
+    val json = Json.Obj(
+      ListMap(
+        "d" -> Json.Num(1.0),
+        "s" -> Json.Str("s"),
+        "b" -> Json.Bool(true)
+      )
+    )
+    val back1 = JsonCodec[Test0].fromJson(json)
+
+    back1 shouldEqual Left("""Invalid json obj: {"d": 1.0, "s": "s", "b": true}, cannot be a sum type""")
+
+    val json2 = Json.Obj(
+      ListMap(
+        "Test0" -> Json.Obj(ListMap("d" -> Json.Num(1.0), "s" -> Json.Str("s"), "b" -> Json.Bool(true)))
+      )
+    )
+
+    val back2 = JsonCodec[Test0].fromJson(json2)
+    back2 shouldEqual Left(
+      """Invalid json obj: {"Test0": {"d": 1.0, "s": "s", "b": true}}, cannot be a sum type, available subTypes: Test1"""
+    )
+
+  }
 }

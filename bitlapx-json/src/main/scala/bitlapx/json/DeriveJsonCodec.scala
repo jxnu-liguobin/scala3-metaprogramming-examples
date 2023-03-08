@@ -28,8 +28,14 @@ import scala.deriving.Mirror
  *  @version 1.0,2023/2/24
  */
 object DeriveJsonCodec:
-  inline def gen[A](using mirror: Mirror.Of[A]) = {
+  inline def gen[A](using mirror: Mirror.Of[A]): JsonCodec[A] = {
     val encoder = JsonEncoder.gen[A]
     val decoder = JsonDecoder.gen[A]
     JsonCodec(encoder, decoder)
+  }
+
+  inline def originalGen[A](using mirror: Mirror.Of[A]): JsonCodec[A] = {
+    val encoder = original.JsonEncoder.derived[A]
+    val decoder = original.JsonDecoder.derived[A]
+    new JsonCodec(encoder, decoder)
   }

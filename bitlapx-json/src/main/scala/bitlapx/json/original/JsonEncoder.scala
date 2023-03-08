@@ -39,7 +39,6 @@ import scala.reflect.*
  *    梦境迷离
  *  @version 1.0,2023/2/24
  */
-
 object JsonEncoder extends EncoderLowPriority1:
 
   inline def derived[V](using m: Mirror.Of[V]): JsonEncoder[V] = (v: V) => {
