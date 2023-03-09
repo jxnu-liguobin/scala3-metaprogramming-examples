@@ -60,17 +60,21 @@ object MacroTools {
   def from[T: Type, R: Type](f: Expr[T => R])(using Quotes): Expr[T] => Expr[R] =
     (x: Expr[T]) => '{ $f($x) }
 
-  inline def showTree_[A](inline a: A): String = ${ showTree[A]('{ a }) }
-  inline def showCode_[A](inline a: A): String = ${ showCode[A]('{ a }) }
+  inline def showTree_[A](inline a: A): String      = ${ showTree[A]('{ a }) }
+  inline def showCode_[A](inline a: A): String      = ${ showCode[A]('{ a }) }
+  inline def showShortCode_[A](inline a: A): String = ${ showShortCode[A]('{ a }) }
 
   def showTree[A: Type](a: Expr[A])(using Quotes): Expr[String] =
     import quotes.reflect.*
     //    Expr(a.asTerm.show)
     Expr(Printer.TreeStructure.show(a.asTerm))
 
+  def showShortCode[A: Type](a: Expr[A])(using quotes: Quotes): Expr[String] =
+    import quotes.reflect.*
+    Expr(Printer.TreeShortCode.show(a.asTerm))
+
   def showCode[A: Type](a: Expr[A])(using Quotes): Expr[String] =
     import quotes.reflect.*
-    //    Expr(a.asTerm.show)
     Expr(Printer.TreeCode.show(a.asTerm))
 
   inline def tupleTypeToString[A <: Tuple]: List[String] = inline erasedValue[A] match {

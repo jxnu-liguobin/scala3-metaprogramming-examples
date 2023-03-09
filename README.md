@@ -64,13 +64,9 @@ simple json tool.
 ```scala
     sealed trait Test0
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
-    val encoder = JsonEncoder.derived[Test0]
-    val decoder = JsonDecoder.derived[Test0]
-
+    given JsonCodec[Test0] = DeriveJsonCodec.originalGen[Test0]
+    
     val obj1  = Test1(1, "s", true, List(1, 2, 3))
-    val json1 = encoder.encode(obj1)
-    val back1 = decoder.decode(json1)
-
-    println(json1.asJsonString)
-    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [1, 2, 3]}}"
+    val json1 = JsonCodec[Test0].toJson(obj1)
+    val back1 = JsonCodec[Test0].fromJson(json1)
 ```
