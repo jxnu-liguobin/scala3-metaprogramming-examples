@@ -52,8 +52,8 @@ simple json tool.
 ```
 
 ## Usage 2: by pure Scala3
-- [x] Scala types to Json asts `bitlapx.json.original.JsonEncoder.derived[A]`
-- [x] Json asts to Scala types `bitlapx.json.original.JsonDecoder.derived[A]`
+- [x] Scala types to Json asts
+- [x] Json asts to Scala types
 - [x] Json asts to string
 - [x] Json asts to pretty string
 - [x] Support product types
