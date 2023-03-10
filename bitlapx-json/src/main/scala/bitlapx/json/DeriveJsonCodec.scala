@@ -33,9 +33,3 @@ object DeriveJsonCodec:
     val decoder = JsonDecoder.gen[A]
     JsonCodec(encoder, decoder)
   }
-
-  inline def originalGen[A](using mirror: Mirror.Of[A]): JsonCodec[A] = {
-    val encoder = original.JsonEncoder.derived[A]
-    val decoder = original.JsonDecoder.derived[A]
-    new JsonCodec(encoder, decoder)
-  }

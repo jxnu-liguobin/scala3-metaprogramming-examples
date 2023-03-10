@@ -36,7 +36,23 @@ import scala.math
  */
 class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
-  "DeriveJsonCodec sum type" should "ok" in {
+  "JsonCodec sum type with nested class" should "ok" in {
+    sealed trait Test0
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Test2]) extends Test0
+    final case class Test2(d: Double, s: String, b: Option[Boolean]) derives JsonEncoder, JsonDecoder
+
+    given JsonCodec[Test0] = DeriveJsonCodec.gen[Test0]
+
+    val obj1  = Test1(1, "s", true, List(Test2(0.1, "212", None)))
+    val json1 = JsonCodec[Test0].toJson(obj1)
+    val back1 = JsonCodec[Test0].fromJson(json1)
+
+    println(json1.asJsonString)
+    json1.asJsonString shouldEqual "{\"Test1\": {\"d\": 1.0, \"s\": \"s\", \"b\": true, \"l\": [{\"d\": 0.1, \"s\": \"212\", \"b\": null}]}}"
+    back1 shouldEqual Right(obj1)
+  }
+
+  "JsonCodec sum type" should "ok" in {
     sealed trait Test0
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
     final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
@@ -61,7 +77,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by List" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
     val obj1 = Test1(1, "s", true, List(Test2("abc")))
@@ -75,7 +91,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by Array" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: Array[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -93,7 +109,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by Seq" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: Seq[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -108,7 +124,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by IndexedSeq" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: LinearSeq[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -123,7 +139,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by HashMap" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: HashMap[String, Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -138,7 +154,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by Set" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: Set[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -153,7 +169,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by IndexedSeq with two elements" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: LinearSeq[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -168,7 +184,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec nested product by HashMap with two elements" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, l: HashMap[String, Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -198,7 +214,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
       listSetKey: ListSet[Test2],
       mutableMapKey: mutable.Map[String, Test2]
     )
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
     object Test2 {
       given Ordering[Test2] = scala.Ordering.fromLessThan((a, b) => a.abc.last < b.abc.last)
     }
@@ -322,7 +338,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec jsonExclude" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, @jsonExclude l: List[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -351,7 +367,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec jsonField" should "ok" in {
     final case class Test1(d: Double, s: String, b: Boolean, @jsonField("test2-list") l: List[Test2])
-    final case class Test2(abc: String)
+    final case class Test2(abc: String) derives JsonEncoder, JsonDecoder
 
     given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
 
@@ -372,5 +388,23 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
         "test2-list" -> Json.Arr(List(Json.Obj(ListMap("abc" -> Json.Str("abc")))))
       )
     )
+  }
+
+  enum Sex:
+    case Male   extends Sex
+    case Female extends Sex
+
+  "JsonCodec scala3 enum" should "ok" in {
+    final case class Test1(sex: Sex) derives JsonEncoder, JsonDecoder
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(Sex.Female)
+    val json = JsonCodec[Test1].toJson(obj1)
+    val back = JsonCodec[Test1].fromJson(json)
+
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"sex\": \"Female\"}"
+    back shouldEqual Right(obj1)
   }
 }

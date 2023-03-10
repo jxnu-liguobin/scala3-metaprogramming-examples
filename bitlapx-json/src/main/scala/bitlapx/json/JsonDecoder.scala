@@ -49,7 +49,7 @@ object JsonDecoder extends DecoderLowPriority1 with AutoDerivation[JsonDecoder]:
   self =>
 
   override def split[T](ctx: SealedTrait[Typeclass, T]): Typeclass[T] = (json: Json) =>
-    val names: Array[String] = IArray.genericWrapArray(ctx.subtypes.map(p => p.typeInfo.short)).toArray
+    lazy val names: Array[String] = IArray.genericWrapArray(ctx.subtypes.map(p => p.typeInfo.short)).toArray
     lazy val tcs: Array[JsonDecoder[Any]] =
       IArray.genericWrapArray(ctx.subtypes.map(_.typeclass)).toArray.asInstanceOf[Array[JsonDecoder[Any]]]
     lazy val namesMap: Map[String, Int] =
@@ -167,10 +167,22 @@ object JsonDecoder extends DecoderLowPriority1 with AutoDerivation[JsonDecoder]:
             jsonDecoderA.decode(list("Left")).map(Left(_))
           } else if (list.contains("Right")) {
             jsonDecoderB.decode(list("Right")).map(Right(_))
-          } else Left(s"Not an either: $json")
-        case _ => Left(s"Not an either: $json")
+          } else Left(s"Invalid either value: $json")
+        case _ => Left(s"Invalid either value: $json")
 
   private inline def fail[V: ClassTag](js: => Json) = {
     val name = classTag[V].runtimeClass.getSimpleName
     Left(s"Expected: $name, got: $js")
   }
+
+  inline given stringEnumDecoder[T <: scala.reflect.Enum](using m: Mirror.SumOf[T]): JsonDecoder[T] =
+    val elemInstances =
+      summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]].productIterator.asInstanceOf[Iterator[ValueOf[T]]].map(_.value)
+    val elemNames = summonAll[Tuple.Map[m.MirroredElemLabels, ValueOf]].productIterator
+      .asInstanceOf[Iterator[ValueOf[String]]]
+      .map(_.value)
+    val mapping = (elemNames zip elemInstances).toMap
+    (json: Json) =>
+      json match
+        case Json.Str(value) => mapping.get(value).fold(Left(s"Name $value is invalid enum value"))(Right(_))
+        case _               => Left(s"Invalid enum value: $json")

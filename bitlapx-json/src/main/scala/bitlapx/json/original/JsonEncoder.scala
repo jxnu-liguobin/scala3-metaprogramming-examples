@@ -22,8 +22,8 @@
 package bitlapx.json.original
 
 import bitlapx.json.ast.*
-import bitlapx.common.MacroTools.*
-import bitlapx.common.TypeInfo
+import bitlapx.common.MacroTools.{ isEnum, * }
+import bitlapx.common.{ MacroTools, TypeInfo }
 import bitlapx.common.TypeInfo.typeInfo
 import bitlapx.json.{ DecoderLowPriority1, EncoderLowPriority1, JsonDecoder, JsonEncoder }
 import bitlapx.json.annotation.*

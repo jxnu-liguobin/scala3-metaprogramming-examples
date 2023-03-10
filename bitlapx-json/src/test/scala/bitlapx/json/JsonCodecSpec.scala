@@ -36,7 +36,7 @@ import scala.collection.immutable.*
 class JsonCodecSpec extends AnyFlatSpec with Matchers {
 
   "JsonCodec derives product" should "ok" in {
-    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonCodec
+    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonEncoder, JsonDecoder
 
     val obj  = Test1(1, "s", true, Set(1, 2, 3))
     val json = JsonCodec[Test1].toJson(obj)
@@ -46,7 +46,7 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
   }
 
   "JsonCodec derives product with jsonExclude" should "ok" in {
-    final case class Test1(d: Double, s: String, @jsonExclude b: Boolean) derives JsonCodec
+    final case class Test1(d: Double, s: String, @jsonExclude b: Boolean) derives JsonEncoder, JsonDecoder
 
     val obj1 = Test1(1, "s", true)
     val json = JsonEncoder[Test1].encode(obj1)
@@ -62,7 +62,7 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
   }
 
   "JsonCodec derives product with jsonField" should "ok" in {
-    final case class Test1(d: Double, s: String, @jsonField("testb") b: Boolean) derives JsonCodec
+    final case class Test1(d: Double, s: String, @jsonField("testb") b: Boolean) derives JsonEncoder, JsonDecoder
     val obj1 = Test1(1, "s", true)
     val json = JsonEncoder[Test1].encode(obj1)
 
@@ -103,7 +103,7 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
   }
 
   "JsonCodec derives sum type with codec" should "ok" in {
-    sealed trait Test0 derives JsonCodec
+    sealed trait Test0 derives JsonEncoder, JsonDecoder
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
     final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
 
@@ -124,7 +124,7 @@ class JsonCodecSpec extends AnyFlatSpec with Matchers {
   }
 
   "JsonCodec auto derive sum type" should "ok" in {
-    sealed trait Test0
+    sealed trait Test0 derives JsonEncoder, JsonDecoder
     final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
     final case class Test2(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
 

@@ -30,25 +30,20 @@ simple json tool.
 - [x] Support product types
 - [x] Support `@jsonField` annotation
 - [x] Support `@jsonExclude` annotation
-- [x] Support sum types (sealed)
+- [x] Support sum types (sealed trait)
+- [x] Support sum types (enum)
 
 ```scala
-    // derives JsonCodec -> AutoDerivation
-    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Int]) derives JsonCodec
-
-    val obj  = Test1(1, "s", true, Set(1, 2, 3))
-    val json = JsonCodec[Test1].toJson(obj)
-    val back = JsonCodec[Test1].fromJson(json)
-
-    // DeriveJsonCodec
-    final case class Test1(d: Double, s: String, b: Boolean, l: Set[Test2])
-    final case class Test2(abc: String)
-
-    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
-
-    val obj1 = Test1(1, "s", true, Set(Test2("abc")))
-    val json = JsonCodec[Test1].toJson(obj1)
-    val back = JsonCodec[Test1].fromJson(json)
+    sealed trait Test0
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Test2]) extends Test0
+    // Nested classes are not automatically derived
+    final case class Test2(d: Double, s: String, b: Option[Boolean]) derives JsonEncoder, JsonDecoder
+    
+    given JsonCodec[Test0] = DeriveJsonCodec.gen[Test0]
+    
+    val obj1  = Test1(1, "s", true, List(Test2(0.1, "212", None)))
+    val json1 = JsonCodec[Test0].toJson(obj1)
+    val back1 = JsonCodec[Test0].fromJson(json1)
 ```
 
 ## Usage 2: by pure Scala3
@@ -59,14 +54,25 @@ simple json tool.
 - [x] Support product types
 - [x] Support `@jsonField` annotation
 - [x] Support `@jsonExclude` annotation
-- [x] Support sum types (sealed)
+- [x] Support sum types (sealed trait)
 
 ```scala
-    sealed trait Test0
-    final case class Test1(d: Double, s: String, b: Boolean, l: List[Int]) extends Test0
-    given JsonCodec[Test0] = DeriveJsonCodec.originalGen[Test0]
+    // Nested classes are not automatically derived 
+    sealed trait Test0 
+    final case class Test1(d: Double, s: String, b: Boolean, l: List[Test2]) extends Test0
+    final case class Test2(d: Double, s: String, b: Option[Boolean])
     
-    val obj1  = Test1(1, "s", true, List(1, 2, 3))
+    given JsonCodec[Test0] = JsonCodec(
+      JsonEncoder.derived[Test0],
+      JsonDecoder.derived[Test0],
+    )
+    // To actively invoke the second implementation, `derives` cannot be used.
+    given JsonEncoder[Test1] = original.JsonEncoder.derived[Test1]
+    given JsonDecoder[Test1] = original.JsonDecoder.derived[Test1]
+    given JsonEncoder[Test2] = original.JsonEncoder.derived[Test2]
+    given JsonDecoder[Test2] = original.JsonDecoder.derived[Test2]
+    
+    val obj1 = Test1(1, "s", true, List(Test2(0.1, "212", None)))
     val json1 = JsonCodec[Test0].toJson(obj1)
     val back1 = JsonCodec[Test0].fromJson(json1)
 ```

@@ -45,7 +45,7 @@ trait JsonEncoder[A]:
 
 end JsonEncoder
 
-object JsonEncoder extends EncoderLowPriority1 with AutoDerivation[JsonEncoder]:
+object JsonEncoder extends EncoderLowPriority1 with Derivation[JsonEncoder]:
   self =>
 
   override def join[A](ctx: CaseClass[Typeclass, A]): Typeclass[A] =
@@ -67,7 +67,7 @@ object JsonEncoder extends EncoderLowPriority1 with AutoDerivation[JsonEncoder]:
                 name
               }.getOrElse(param.label)
               val value = param.typeclass.encode(param.deref(a))
-              if (value == Json.Null) chunk
+              if (value == Json.Null) chunk ++ ListMap(name -> Json.Null) // filter Json.Null?
               else chunk ++ ListMap(name -> value)
             }
         )
@@ -130,3 +130,12 @@ object JsonEncoder extends EncoderLowPriority1 with AutoDerivation[JsonEncoder]:
               "Right" -> jsonEncoderB.encode(b)
             )
           )
+
+  inline given stringEnumEncoder[T <: scala.reflect.Enum](using m: Mirror.SumOf[T]): JsonEncoder[T] =
+    val elemInstances =
+      summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]].productIterator.asInstanceOf[Iterator[ValueOf[T]]].map(_.value)
+    val elemNames = summonAll[Tuple.Map[m.MirroredElemLabels, ValueOf]].productIterator
+      .asInstanceOf[Iterator[ValueOf[String]]]
+      .map(_.value)
+    val mapping = (elemInstances zip elemNames).toMap
+    (a: T) => JsonEncoder[String].encode(mapping.apply(a))

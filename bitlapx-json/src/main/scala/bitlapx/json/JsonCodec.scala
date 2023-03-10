@@ -45,7 +45,7 @@ object JsonCodec extends CodecLowPriority0:
 
   inline def apply[A](using js: JsonCodec[A]): JsonCodec[A] = js
 
-  inline given derived[A](using m: Mirror.Of[A], e: JsonEncoder[A], d: JsonDecoder[A]): JsonCodec[A] =
+  inline given derived[A](using e: JsonEncoder[A], d: JsonDecoder[A]): JsonCodec[A] =
     new JsonCodec[A](e, d)
 
   given JsonCodec[String] = new JsonCodec[String](JsonEncoder[String], JsonDecoder[String])

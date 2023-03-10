@@ -30,6 +30,7 @@ import scala.annotation.tailrec
 import scala.compiletime.*
 import scala.quoted.*
 import scala.reflect.{ classTag, ClassTag }
+import scala.util.NotGiven
 
 /** @author
  *    梦境迷离
@@ -142,4 +143,19 @@ object MacroTools {
         name -> summonInline[F[t]].asInstanceOf[F[Any]] :: recurse[ts, F]
       case EmptyTuple => Nil
     }
+
+  final case class IsEnum[X](value: Boolean)
+
+  transparent inline given isEnum[X](using X <:< reflect.Enum): IsEnum[X] = IsEnum(true)
+
+  transparent inline given isNotEnum[X](using NotGiven[X <:< reflect.Enum]): IsEnum[X] =
+    IsEnum(false)
+
+  transparent inline def isEnum_[X](using inline ev: IsEnum[X]): ev.value.type = ev.value
+
+  transparent inline def isEnum[X]: Boolean = inline compiletime.erasedValue[X] match
+    case _: Null         => false
+    case _: Nothing      => false
+    case _: reflect.Enum => true
+    case _               => false
 }
