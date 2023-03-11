@@ -393,6 +393,7 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
   enum Sex:
     case Male   extends Sex
     case Female extends Sex
+  object Sex extends ExtraEnumImplicits // only support simple enum
 
   "JsonCodec scala3 enum" should "ok" in {
     final case class Test1(sex: Sex) derives JsonEncoder, JsonDecoder
@@ -406,5 +407,32 @@ class DeriveJsonCodecSpec extends AnyFlatSpec with Matchers {
     println(json.asJsonString)
     json.asJsonString shouldEqual "{\"sex\": \"Female\"}"
     back shouldEqual Right(obj1)
+  }
+
+  enum Foo derives JsonEncoder, JsonDecoder:
+    case Bar
+    case Baz(baz: String)
+    case Qux(foo: Foo)
+
+  "JsonCodec scala3 enum with fields" should "ok" in {
+    final case class Test1(foo: Foo) derives JsonEncoder, JsonDecoder
+
+    given JsonCodec[Test1] = DeriveJsonCodec.gen[Test1]
+
+    val obj1 = Test1(Foo.Qux(Foo.Bar))
+    val json = JsonCodec[Test1].toJson(obj1)
+    val back = JsonCodec[Test1].fromJson(json)
+
+    println(json.asJsonString)
+    json.asJsonString shouldEqual "{\"foo\": {\"Qux\": {\"foo\": {\"Bar\": {}}}}}"
+    back shouldEqual Right(obj1)
+
+    val obj2  = Test1(Foo.Baz("baz"))
+    val json2 = JsonCodec[Test1].toJson(obj2)
+    val back2 = JsonCodec[Test1].fromJson(json2)
+
+    println(json2.asJsonString)
+    json2.asJsonString shouldEqual "{\"foo\": {\"Baz\": {\"baz\": \"baz\"}}}"
+    back2 shouldEqual Right(obj2)
   }
 }

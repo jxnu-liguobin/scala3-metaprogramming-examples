@@ -174,15 +174,3 @@ object JsonDecoder extends DecoderLowPriority1 with AutoDerivation[JsonDecoder]:
     val name = classTag[V].runtimeClass.getSimpleName
     Left(s"Expected: $name, got: $js")
   }
-
-  inline given stringEnumDecoder[T <: scala.reflect.Enum](using m: Mirror.SumOf[T]): JsonDecoder[T] =
-    val elemInstances =
-      summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]].productIterator.asInstanceOf[Iterator[ValueOf[T]]].map(_.value)
-    val elemNames = summonAll[Tuple.Map[m.MirroredElemLabels, ValueOf]].productIterator
-      .asInstanceOf[Iterator[ValueOf[String]]]
-      .map(_.value)
-    val mapping = (elemNames zip elemInstances).toMap
-    (json: Json) =>
-      json match
-        case Json.Str(value) => mapping.get(value).fold(Left(s"Name $value is invalid enum value"))(Right(_))
-        case _               => Left(s"Invalid enum value: $json")

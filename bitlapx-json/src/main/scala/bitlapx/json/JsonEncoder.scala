@@ -130,12 +130,3 @@ object JsonEncoder extends EncoderLowPriority1 with Derivation[JsonEncoder]:
               "Right" -> jsonEncoderB.encode(b)
             )
           )
-
-  inline given stringEnumEncoder[T <: scala.reflect.Enum](using m: Mirror.SumOf[T]): JsonEncoder[T] =
-    val elemInstances =
-      summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]].productIterator.asInstanceOf[Iterator[ValueOf[T]]].map(_.value)
-    val elemNames = summonAll[Tuple.Map[m.MirroredElemLabels, ValueOf]].productIterator
-      .asInstanceOf[Iterator[ValueOf[String]]]
-      .map(_.value)
-    val mapping = (elemInstances zip elemNames).toMap
-    (a: T) => JsonEncoder[String].encode(mapping.apply(a))
