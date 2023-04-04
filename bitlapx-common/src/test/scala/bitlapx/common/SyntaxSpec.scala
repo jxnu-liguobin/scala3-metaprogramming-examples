@@ -21,7 +21,7 @@
 
 package bitlapx.common
 
-import MacroTools.*
+import Syntax.*
 import magnolia1.TypeInfo as MTypeInfo
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

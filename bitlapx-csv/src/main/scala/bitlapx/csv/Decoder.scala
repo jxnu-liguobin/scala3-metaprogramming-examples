@@ -25,7 +25,7 @@ import magnolia1.*
 
 import scala.compiletime.*
 import scala.deriving.Mirror
-import bitlapx.common.MacroTools.*
+import bitlapx.common.Syntax.*
 import bitlapx.csv.ast.*
 
 /** @author

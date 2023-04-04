@@ -21,7 +21,7 @@
 
 package bitlapx.json.original
 
-import bitlapx.common.MacroTools.recurse
+import bitlapx.common.Syntax.recurse
 import bitlapx.json.ast.*
 import bitlapx.common.TypeInfo
 import bitlapx.json

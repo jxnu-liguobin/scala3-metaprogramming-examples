@@ -36,7 +36,7 @@ import scala.util.NotGiven
  *    梦境迷离
  *  @version 1.0,2023/3/1
  */
-object MacroTools {
+object Syntax:
   extension [T](t: T) def typeInfo = summon[TypeInfo[T]]
 
   extension [T, Out](using Encoder[T, Out])(t: T) def encode = summon[Encoder[T, Out]].encode(t)
@@ -149,4 +149,3 @@ object MacroTools {
     case _: Nothing      => false
     case _: reflect.Enum => true
     case _               => false
-}
