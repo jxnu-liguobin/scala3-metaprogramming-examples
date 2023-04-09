@@ -2,30 +2,6 @@ import sbt.Test
 
 val scala3Version    = "3.2.2"
 val scalatestVersion = "3.2.14"
-ThisBuild / resolvers ++= Seq(
-  Resolver.mavenLocal,
-  "Sonatype OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
-  "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
-)
-
-inThisBuild(
-  List(
-    organization           := "org.bitlap",
-    sonatypeCredentialHost := "s01.oss.sonatype.org",
-    sonatypeRepository :=
-      "https://s01.oss.sonatype.org/service/local",
-    homepage := Some(url("https://github.com/bitlap/bitlap")),
-    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    developers := List(
-      Developer(
-        id = "dreamylost",
-        name = "梦境迷离",
-        email = "dreamylost@outlook.com",
-        url = url("https://blog.dreamylost.cn")
-      )
-    )
-  )
-)
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val commonSettings =
@@ -55,43 +31,43 @@ lazy val commonSettings =
     )
   )
 
-lazy val bitlapx = project
+lazy val `scala3-metaprogramming-examples` = project
   .in(file("."))
-  .aggregate(`bitlapx-csv`, `bitlapx-common`, `bitlapx-json`)
+  .aggregate(`csv`, `common`, `json`)
   .settings(
     commands ++= Commands.value,
     crossScalaVersions := Nil,
     publish / skip     := true
   )
 
-lazy val `bitlapx-csv` = project
-  .in(file("bitlapx-csv"))
+lazy val `csv` = project
+  .in(file("csv"))
   .settings(
-    name := "bitlapx-csv",
+    name := "csv",
     libraryDependencies ++= Seq(
       "com.softwaremill.magnolia1_3" %% "magnolia" % "1.1.1",
       "org.scalameta"                %% "munit"    % "1.0.0-M3" % Test
     )
   )
   .settings(commonSettings)
-  .dependsOn(`bitlapx-common` % "compile->compile;test->test")
+  .dependsOn(`common` % "compile->compile;test->test")
 
-lazy val `bitlapx-json` = project
-  .in(file("bitlapx-json"))
+lazy val `json` = project
+  .in(file("json"))
   .settings(
-    name := "bitlapx-json",
+    name := "json",
     libraryDependencies ++= Seq(
       "com.softwaremill.magnolia1_3" %% "magnolia" % "1.1.1",
       "org.scalameta"                %% "munit"    % "1.0.0-M3" % Test
     )
   )
   .settings(commonSettings)
-  .dependsOn(`bitlapx-common` % "compile->compile;test->test")
+  .dependsOn(`common` % "compile->compile;test->test")
 
-lazy val `bitlapx-common` = project
-  .in(file("bitlapx-common"))
+lazy val `common` = project
+  .in(file("common"))
   .settings(
-    name := "bitlapx-common",
+    name := "common",
     libraryDependencies ++= Seq(
       "com.softwaremill.magnolia1_3" %% "magnolia" % "1.1.1",
       "org.scalameta"                %% "munit"    % "1.0.0-M3" % Test

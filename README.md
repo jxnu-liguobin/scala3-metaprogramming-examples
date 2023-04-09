@@ -1,13 +1,11 @@
-# bitlapx
+# Scala3 Metaprogramming Examples
 
-![CI][Badge-CI]  [![codecov][Badge-Codecov]][Link-Codecov]   [![Nexus (Snapshots)][Badge-Snapshots]][Link-Snapshots] 
+![CI][Badge-CI]  [![codecov][Badge-Codecov]][Link-Codecov] 
 
-[Badge-CI]: https://github.com/bitlap/bitlapx/actions/workflows/ScalaCI.yml/badge.svg
-[Badge-Codecov]: https://codecov.io/gh/bitlap/bitlapx/branch/master/graph/badge.svg?token=IA596YRTOT
-[Badge-Snapshots]: https://img.shields.io/nexus/s/org.bitlap/bitlapx-json_3?server=https%3A%2F%2Fs01.oss.sonatype.org
+[Badge-CI]: https://github.com/jxnu-liguobin/scala3-metaprogramming-examples/actions/workflows/ScalaCI.yml/badge.svg
+[Badge-Codecov]: https://codecov.io/gh/jxnu-liguobin/scala3-metaprogramming-examples/branch/master/graph/badge.svg?token=IA596YRTOT
 
-[Link-Codecov]: https://codecov.io/gh/bitlap/bitlapx
-[Link-Snapshots]: https://s01.oss.sonatype.org/content/repositories/snapshots/org/bitlap/bitlapx
+[Link-Codecov]: https://codecov.io/gh/jxnu-liguobin/scala3-metaprogramming-examples
 
 ----
 
@@ -17,10 +15,6 @@ Toy box for learning scala3 metaprogramming
 # bitlapx-json
 
 simple json tool.
-
-```scala
-"org.bitlap" %% "bitlapx-json" % <version>
-```
 
 ## Usage 1: by magnolia1
 - [x] Scala types to Json asts
